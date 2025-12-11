@@ -29,8 +29,8 @@ const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
 
 // Mock config
 const mockPlatformsConfig = {
-    whatsappBaseUrl: 'https://graph.facebook.com/v18.0',
-    instagramBaseUrl: 'https://graph.facebook.com/v18.0',
+    whatsappBaseUrl: 'https://graph.facebook.com/v24.0',
+    instagramBaseUrl: 'https://graph.facebook.com/v24.0',
     webchatWidgetUrl: 'https://example.com/webchat'
 };
 
@@ -89,7 +89,7 @@ describe('Message Service', () => {
                 ['phone123']
             );
             expect(mockFetch).toHaveBeenCalledWith(
-                'https://graph.facebook.com/v18.0/phone123/messages',
+                'https://graph.facebook.com/v24.0/phone123/messages',
                 expect.objectContaining({
                     method: 'POST',
                     headers: expect.objectContaining({
@@ -125,7 +125,7 @@ describe('Message Service', () => {
             expect(result.success).toBe(true);
             expect(result.messageId).toBe('msg456');
             expect(mockFetch).toHaveBeenCalledWith(
-                'https://graph.facebook.com/v18.0/business123/messages',
+                'https://graph.facebook.com/v24.0/business123/messages',
                 expect.objectContaining({
                     method: 'POST',
                     body: JSON.stringify({

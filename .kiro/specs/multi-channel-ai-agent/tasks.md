@@ -274,7 +274,7 @@
   1. **Implement Message Service** (`server/src/services/messageService.ts`)
      - Create `sendWhatsAppMessage(metaPhoneNumberId, customerPhone, messageText, accessToken)` function
      - Create `sendInstagramMessage(instagramAccountId, customerPhone, messageText, accessToken)` function
-     - Use Meta Graph API v22.0
+     - Use Meta Graph API v24.0
      - Retrieve `meta_phone_number_id` and `access_token` from phone_numbers table
      - Handle platform-specific message formats
   
@@ -304,7 +304,7 @@
   **Meta API Integration:**
   ```typescript
   // WhatsApp
-  POST https://graph.facebook.com/v22.0/{meta_phone_number_id}/messages
+  POST https://graph.facebook.com/v24.0/{meta_phone_number_id}/messages
   Headers: Authorization: Bearer {access_token}
   Body: {
     messaging_product: 'whatsapp',
@@ -314,7 +314,7 @@
   }
   
   // Instagram
-  POST https://graph.facebook.com/v22.0/{instagram_account_id}/messages
+  POST https://graph.facebook.com/v24.0/{instagram_account_id}/messages
   Headers: Authorization: Bearer {access_token}
   Body: {
     recipient: { id: customerPhone },

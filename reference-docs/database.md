@@ -49,7 +49,7 @@ WhatsApp Business phone numbers and Instagram business accounts.
 **Important**: `meta_phone_number_id` is the ID from Meta's platform:
 - For WhatsApp: WABA phone_number_id (e.g., "836990829491415")
 - For Instagram: Instagram Account ID (e.g., "17841234567890123")
-- Used in Meta API calls: `POST /v22.0/{meta_phone_number_id}/messages`
+- Used in Meta API calls: `POST /v24.0/{meta_phone_number_id}/messages`
 
 ```sql
 CREATE TABLE phone_numbers (

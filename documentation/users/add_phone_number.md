@@ -141,7 +141,7 @@ The `meta_phone_number_id` is Meta's identifier used in API calls:
 
 - **WhatsApp**: WABA phone_number_id (e.g., "836990829491415")
 - **Instagram**: Instagram Account ID (e.g., "17841234567890123")
-- This ID is used in Meta API URLs: `POST /v22.0/{meta_phone_number_id}/messages`
+- This ID is used in Meta API URLs: `POST /v24.0/{meta_phone_number_id}/messages`
 
 ### Access Token Security
 

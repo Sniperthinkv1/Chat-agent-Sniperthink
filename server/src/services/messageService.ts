@@ -419,7 +419,7 @@ async function sendInstagramTypingIndicator(
         const timeoutId = setTimeout(() => controller.abort(), 3000);
 
         // Try Instagram Graph API first
-        const instagramApiUrl = 'https://graph.instagram.com/v21.0/me/messages';
+        const instagramApiUrl = 'https://graph.facebook.com/v24.0/me/messages';
         
         const response = await fetch(instagramApiUrl, {
             method: 'POST',
@@ -715,7 +715,7 @@ async function sendInstagramMessage(
         
         try {
             // Try Instagram Graph API first (works with Instagram Login tokens)
-            const instagramApiUrl = 'https://graph.instagram.com/v21.0/me/messages';
+            const instagramApiUrl = 'https://graph.facebook.com/v24.0/me/messages';
             
             logger.debug('Attempting Instagram Graph API (me/messages)', {
                 correlationId,
@@ -1466,6 +1466,323 @@ export async function getDeliveryStatistics(
             failed: 0,
             pending: 0,
             totalMessages: 0
+        };
+    }
+}
+
+/**
+ * WhatsApp template message component structure for API
+ */
+interface TemplateMessageComponent {
+    type: 'header' | 'body' | 'button';
+    parameters?: Array<{
+        type: 'text' | 'currency' | 'date_time' | 'image' | 'document' | 'video';
+        text?: string;
+    }>;
+    sub_type?: 'quick_reply' | 'url';
+    index?: number;
+}
+
+/**
+ * Send WhatsApp template message
+ * Used for initiating conversations (first messages) or sending approved templates
+ * 
+ * @param phoneNumberId - Meta's phone_number_id (not our internal ID)
+ * @param customerPhone - Customer phone number in E.164 format
+ * @param templateName - Approved template name
+ * @param languageCode - Template language code (e.g., 'en', 'en_US')
+ * @param variables - Variable values keyed by position: { "1": "John", "2": "Acme" }
+ * @param accessToken - Access token for Meta API
+ * @param correlationId - Correlation ID for logging
+ */
+export async function sendWhatsAppTemplateMessage(
+    phoneNumberId: string,
+    customerPhone: string,
+    templateName: string,
+    languageCode: string,
+    variables: Record<string, string>,
+    accessToken: string,
+    correlationId: string
+): Promise<SendMessageResult> {
+    try {
+        logger.info('Sending WhatsApp template message', {
+            correlationId,
+            phoneNumberId,
+            customerPhone,
+            templateName,
+            languageCode,
+            variableCount: Object.keys(variables).length
+        });
+
+        // Build components array with variables
+        const components: TemplateMessageComponent[] = [];
+
+        // Add body component with variables if any
+        if (Object.keys(variables).length > 0) {
+            const bodyParameters = Object.keys(variables)
+                .sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
+                .map(key => ({
+                    type: 'text' as const,
+                    text: variables[key]
+                }));
+
+            components.push({
+                type: 'body',
+                parameters: bodyParameters
+            });
+        }
+
+        const requestBody = {
+            messaging_product: 'whatsapp',
+            recipient_type: 'individual',
+            to: customerPhone,
+            type: 'template',
+            template: {
+                name: templateName,
+                language: {
+                    code: languageCode
+                },
+                components: components.length > 0 ? components : undefined
+            }
+        };
+
+        // Add timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout for templates
+
+        const fetchStart = Date.now();
+
+        try {
+            const response = await fetch(
+                `${platformsConfig.whatsappBaseUrl}/${phoneNumberId}/messages`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json',
+                        'User-Agent': 'multi-channel-ai-agent/1.0.0'
+                    },
+                    body: JSON.stringify(requestBody),
+                    signal: controller.signal
+                }
+            );
+
+            clearTimeout(timeoutId);
+            const fetchDuration = Date.now() - fetchStart;
+
+            logger.debug('WhatsApp Template API response received', {
+                correlationId,
+                phoneNumberId,
+                fetchDuration,
+                statusCode: response.status
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: { message: 'Unknown error' } })) as any;
+                const statusCode = response.status;
+                const errorCode = errorData.error?.code;
+                const errorMessage = errorData.error?.message || `HTTP ${statusCode}`;
+
+                let retryable = false;
+                let serviceErrorCode = 'WHATSAPP_TEMPLATE_ERROR';
+
+                // Handle template-specific errors
+                switch (errorCode) {
+                    case 132000: // Template param value has invalid format
+                        serviceErrorCode = 'WHATSAPP_TEMPLATE_PARAM_INVALID';
+                        break;
+                    case 132001: // Template name doesn't exist
+                        serviceErrorCode = 'WHATSAPP_TEMPLATE_NOT_FOUND';
+                        break;
+                    case 132005: // Template hydration failed
+                        serviceErrorCode = 'WHATSAPP_TEMPLATE_HYDRATION_FAILED';
+                        break;
+                    case 132007: // Template not approved for that language
+                        serviceErrorCode = 'WHATSAPP_TEMPLATE_NOT_APPROVED';
+                        break;
+                    case 132012: // Template param count mismatch
+                        serviceErrorCode = 'WHATSAPP_TEMPLATE_PARAM_MISMATCH';
+                        break;
+                    case 132015: // Template is paused
+                        serviceErrorCode = 'WHATSAPP_TEMPLATE_PAUSED';
+                        break;
+                    case 132016: // Template is disabled
+                        serviceErrorCode = 'WHATSAPP_TEMPLATE_DISABLED';
+                        break;
+                    default:
+                        if (statusCode >= 500) {
+                            retryable = true;
+                            serviceErrorCode = 'WHATSAPP_SERVER_ERROR';
+                        } else if (statusCode === 429) {
+                            retryable = true;
+                            serviceErrorCode = 'WHATSAPP_RATE_LIMIT';
+                        }
+                }
+
+                logger.warn('WhatsApp Template API error', {
+                    correlationId,
+                    phoneNumberId,
+                    customerPhone,
+                    templateName,
+                    statusCode,
+                    errorCode,
+                    errorMessage,
+                    retryable
+                });
+
+                return {
+                    success: false,
+                    error: errorMessage,
+                    errorCode: serviceErrorCode,
+                    retryable
+                };
+            }
+
+            const data = await response.json() as any;
+            const messageId = data.messages?.[0]?.id;
+
+            if (!messageId) {
+                logger.warn('WhatsApp Template API returned no message ID', {
+                    correlationId,
+                    phoneNumberId,
+                    customerPhone,
+                    templateName,
+                    response: data
+                });
+
+                return {
+                    success: false,
+                    error: 'No message ID returned from WhatsApp Template API',
+                    errorCode: 'WHATSAPP_TEMPLATE_NO_MESSAGE_ID'
+                };
+            }
+
+            logger.info('WhatsApp template message sent successfully', {
+                correlationId,
+                phoneNumberId,
+                customerPhone,
+                templateName,
+                messageId,
+                fetchDuration
+            });
+
+            return {
+                success: true,
+                messageId
+            };
+
+        } catch (fetchError) {
+            clearTimeout(timeoutId);
+
+            if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+                logger.error('WhatsApp Template API timeout', {
+                    correlationId,
+                    phoneNumberId,
+                    customerPhone,
+                    templateName,
+                    timeout: 15000
+                });
+
+                return {
+                    success: false,
+                    error: 'WhatsApp Template API timeout after 15 seconds',
+                    errorCode: 'WHATSAPP_TEMPLATE_TIMEOUT',
+                    retryable: true
+                };
+            }
+
+            throw fetchError;
+        }
+
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+        logger.error('WhatsApp template message sending failed', {
+            correlationId,
+            phoneNumberId,
+            customerPhone,
+            templateName,
+            error: errorMessage
+        });
+
+        return {
+            success: false,
+            error: errorMessage,
+            errorCode: 'WHATSAPP_TEMPLATE_NETWORK_ERROR',
+            retryable: true
+        };
+    }
+}
+
+/**
+ * Send template message to a customer (high-level function)
+ * Retrieves access token and phone number info automatically
+ * 
+ * @param phoneNumberId - Our internal phone number ID
+ * @param customerPhone - Customer phone number
+ * @param templateName - Template name
+ * @param languageCode - Language code
+ * @param variables - Variable values
+ * @param correlationId - Correlation ID
+ */
+export async function sendTemplateMessage(
+    phoneNumberId: string,
+    customerPhone: string,
+    templateName: string,
+    languageCode: string,
+    variables: Record<string, string>,
+    correlationId: string
+): Promise<SendMessageResult> {
+    try {
+        // Get access token info
+        const tokenInfo = await getAccessTokenInfo(phoneNumberId);
+        
+        if (!tokenInfo) {
+            logger.error('No access token found for template message', {
+                correlationId,
+                phoneNumberId
+            });
+            
+            return {
+                success: false,
+                error: 'Phone number not found or missing access token',
+                errorCode: 'PHONE_NUMBER_NOT_FOUND'
+            };
+        }
+
+        if (tokenInfo.platform !== 'whatsapp') {
+            return {
+                success: false,
+                error: 'Template messages only supported for WhatsApp',
+                errorCode: 'PLATFORM_NOT_SUPPORTED'
+            };
+        }
+
+        return sendWhatsAppTemplateMessage(
+            tokenInfo.metaPhoneNumberId,
+            customerPhone,
+            templateName,
+            languageCode,
+            variables,
+            tokenInfo.accessToken,
+            correlationId
+        );
+
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        
+        logger.error('Template message sending failed', {
+            correlationId,
+            phoneNumberId,
+            customerPhone,
+            templateName,
+            error: errorMessage
+        });
+
+        return {
+            success: false,
+            error: errorMessage,
+            errorCode: 'TEMPLATE_SEND_ERROR'
         };
     }
 }

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { logger } from '../utils/logger';
 import { enqueueMessage } from '../utils/messageQueue';
 import { v4 as uuidv4 } from 'uuid';
+import { db } from '../utils/database';
 
 /**
  * Interface for processed webhook message (matches QueuedMessage)
@@ -13,6 +14,17 @@ interface ProcessedMessage {
     message_text: string;
     timestamp: string;
     platform_type: 'whatsapp' | 'instagram' | 'webchat';
+}
+
+/**
+ * Interface for template status update webhook
+ */
+interface TemplateStatusUpdate {
+    event: 'APPROVED' | 'REJECTED' | 'PENDING_DELETION' | 'FLAGGED' | 'DISABLED' | 'REINSTATED' | 'PENDING';
+    message_template_id: number;
+    message_template_name: string;
+    message_template_language: string;
+    reason?: string;
 }
 
 /**
@@ -53,8 +65,10 @@ interface WhatsAppWebhookPayload {
                     recipient_id: string;
                     errors?: Array<{ code: number; title: string; message: string }>;
                 }>;
+                // Template status update field
+                message_template_status_update?: TemplateStatusUpdate;
             };
-            field: 'messages';
+            field: 'messages' | 'message_template_status_update';
         }>;
     }>;
 }
@@ -139,8 +153,14 @@ export async function handleMetaWebhook(req: Request, res: Response): Promise<vo
 
         // Process based on platform type
         let processedMessages: ProcessedMessage[] = [];
+        let templateStatusUpdates = 0;
         
         if (payload.object === 'whatsapp_business_account') {
+            // Check for template status updates first
+            const templateResult = await handleTemplateStatusUpdate(payload as WhatsAppWebhookPayload, correlationId);
+            templateStatusUpdates = templateResult.updates;
+            
+            // Then parse regular messages
             processedMessages = parseWhatsAppPayload(payload as WhatsAppWebhookPayload, correlationId);
         } else if (payload.object === 'instagram') {
             processedMessages = parseInstagramPayload(payload as InstagramWebhookPayload, correlationId);
@@ -185,6 +205,7 @@ export async function handleMetaWebhook(req: Request, res: Response): Promise<vo
         logger.info('Webhook processed successfully', {
             platform: payload.object,
             messagesProcessed: processedMessages.length,
+            templateStatusUpdates,
             successCount,
             failureCount,
             correlationId
@@ -194,6 +215,7 @@ export async function handleMetaWebhook(req: Request, res: Response): Promise<vo
         res.status(200).json({
             status: 'received',
             messagesProcessed: processedMessages.length,
+            templateStatusUpdates,
             correlationId,
             timestamp: new Date().toISOString()
         });
@@ -284,6 +306,133 @@ function parseWhatsAppPayload(payload: WhatsAppWebhookPayload, correlationId: st
     }
 
     return messages;
+}
+
+/**
+ * Handle template status updates from Meta webhook
+ * Maps Meta status events to our internal status values
+ */
+async function handleTemplateStatusUpdate(
+    payload: WhatsAppWebhookPayload,
+    correlationId: string
+): Promise<{ processed: boolean; updates: number }> {
+    let updates = 0;
+
+    try {
+        for (const entry of payload.entry) {
+            const wabaId = entry.id; // WhatsApp Business Account ID
+            
+            for (const change of entry.changes) {
+                if (change.field !== 'message_template_status_update') {
+                    continue;
+                }
+
+                const statusUpdate = change.value.message_template_status_update;
+                if (!statusUpdate) continue;
+
+                // Map Meta events to our internal status
+                const statusMap: Record<string, string> = {
+                    'APPROVED': 'APPROVED',
+                    'REJECTED': 'REJECTED',
+                    'PENDING': 'PENDING',
+                    'PENDING_DELETION': 'PENDING',
+                    'FLAGGED': 'REJECTED',
+                    'DISABLED': 'REJECTED',
+                    'REINSTATED': 'APPROVED'
+                };
+
+                const internalStatus = statusMap[statusUpdate.event] || 'PENDING';
+
+                logger.info('📋 Template status update received', {
+                    templateName: statusUpdate.message_template_name,
+                    templateId: statusUpdate.message_template_id,
+                    event: statusUpdate.event,
+                    internalStatus,
+                    language: statusUpdate.message_template_language,
+                    reason: statusUpdate.reason,
+                    wabaId,
+                    correlationId
+                });
+
+                // Update template in database using meta_template_id
+                const result = await db.query(
+                    `UPDATE templates 
+                     SET status = $1, 
+                         rejection_reason = $2,
+                         updated_at = CURRENT_TIMESTAMP
+                     WHERE meta_template_id = $3`,
+                    [
+                        internalStatus,
+                        statusUpdate.reason || null,
+                        statusUpdate.message_template_id.toString()
+                    ]
+                );
+
+                if (result.rowCount && result.rowCount > 0) {
+                    updates++;
+                    logger.info('✅ Template status updated in database', {
+                        templateId: statusUpdate.message_template_id,
+                        templateName: statusUpdate.message_template_name,
+                        newStatus: internalStatus,
+                        correlationId
+                    });
+                } else {
+                    // Try to find by name and WABA ID if meta_template_id not found
+                    const phoneResult = await db.query(
+                        `SELECT pn.id FROM phone_numbers pn 
+                         WHERE pn.waba_id = $1`,
+                        [wabaId]
+                    );
+
+                    if (phoneResult.rows.length > 0) {
+                        const phoneNumberId = phoneResult.rows[0].id;
+                        const updateResult = await db.query(
+                            `UPDATE templates 
+                             SET status = $1, 
+                                 rejection_reason = $2,
+                                 meta_template_id = $3,
+                                 updated_at = CURRENT_TIMESTAMP
+                             WHERE name = $4 
+                               AND phone_number_id = $5
+                               AND language = $6`,
+                            [
+                                internalStatus,
+                                statusUpdate.reason || null,
+                                statusUpdate.message_template_id.toString(),
+                                statusUpdate.message_template_name,
+                                phoneNumberId,
+                                statusUpdate.message_template_language
+                            ]
+                        );
+
+                        if (updateResult.rowCount && updateResult.rowCount > 0) {
+                            updates++;
+                            logger.info('✅ Template status updated by name match', {
+                                templateName: statusUpdate.message_template_name,
+                                newStatus: internalStatus,
+                                correlationId
+                            });
+                        } else {
+                            logger.warn('⚠️ Template not found for status update', {
+                                templateId: statusUpdate.message_template_id,
+                                templateName: statusUpdate.message_template_name,
+                                wabaId,
+                                correlationId
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        return { processed: true, updates };
+    } catch (error) {
+        logger.error('Error handling template status update', {
+            error: error instanceof Error ? error.message : 'Unknown error',
+            correlationId
+        });
+        return { processed: false, updates };
+    }
 }
 
 /**

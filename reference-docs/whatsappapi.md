@@ -4,7 +4,7 @@ This document provides the authoritative reference for WhatsApp Business API int
 
 ## API Overview
 
-- **Base URL**: `https://graph.facebook.com/v22.0`
+- **Base URL**: `https://graph.facebook.com/v24.0`
 - **Authentication**: Access tokens per WhatsApp Business Account
 - **Rate Limits**: 1000 requests per second per phone number
 - **Webhook**: Single endpoint handles both WhatsApp and Instagram
@@ -40,7 +40,7 @@ interface WhatsAppAccount {
 
 ### Webhook URL Setup
 ```bash
-POST https://graph.facebook.com/v18.0/{whatsapp-business-account-id}/subscribed_apps
+POST https://graph.facebook.com/v24.0/{whatsapp-business-account-id}/subscribed_apps
 ```
 
 ### Webhook Payload Structure
@@ -154,7 +154,7 @@ interface TypingIndicatorWithReadReceipt {
 ```bash
 # Show typing indicator + mark as read
 curl -X POST \
-  'https://graph.facebook.com/v22.0/836990829491415/messages' \
+  'https://graph.facebook.com/v24.0/836990829491415/messages' \
   -H 'Authorization: Bearer EAAxxxx...' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -329,7 +329,7 @@ interface TemplateMessage {
 **URL Structure**: Use `meta_phone_number_id` from your database in the URL path.
 
 ```http
-POST https://graph.facebook.com/v22.0/{meta_phone_number_id}/messages
+POST https://graph.facebook.com/v24.0/{meta_phone_number_id}/messages
 Authorization: Bearer {access-token}
 Content-Type: application/json
 
@@ -348,7 +348,7 @@ Content-Type: application/json
 ```bash
 # Text message
 curl -i -X POST \
-  'https://graph.facebook.com/v22.0/836990829491415/messages' \
+  'https://graph.facebook.com/v24.0/836990829491415/messages' \
   -H 'Authorization: Bearer EAAxxxx...' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -362,7 +362,7 @@ curl -i -X POST \
 
 # Template message (for messages outside 24-hour window)
 curl -i -X POST \
-  'https://graph.facebook.com/v22.0/836990829491415/messages' \
+  'https://graph.facebook.com/v24.0/836990829491415/messages' \
   -H 'Authorization: Bearer EAAxxxx...' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -380,7 +380,7 @@ curl -i -X POST \
 
 ### Upload Media
 ```http
-POST https://graph.facebook.com/v22.0/{meta_phone_number_id}/media
+POST https://graph.facebook.com/v24.0/{meta_phone_number_id}/media
 Authorization: Bearer {access-token}
 Content-Type: multipart/form-data
 
@@ -391,13 +391,13 @@ messaging_product: whatsapp
 
 ### Download Media
 ```http
-GET https://graph.facebook.com/v22.0/{media-id}
+GET https://graph.facebook.com/v24.0/{media-id}
 Authorization: Bearer {access-token}
 ```
 
 ### Mark Message as Read
 ```http
-POST https://graph.facebook.com/v22.0/{meta_phone_number_id}/messages
+POST https://graph.facebook.com/v24.0/{meta_phone_number_id}/messages
 Authorization: Bearer {access-token}
 Content-Type: application/json
 
@@ -432,7 +432,7 @@ async function sendWhatsAppMessage(
   accessToken: string          // Access token from database
 ): Promise<{ messages: Array<{ id: string }> }> {
   const response = await fetch(
-    `https://graph.facebook.com/v22.0/${metaPhoneNumberId}/messages`,
+    `https://graph.facebook.com/v24.0/${metaPhoneNumberId}/messages`,
     {
       method: 'POST',
       headers: {

@@ -127,6 +127,10 @@ export class App {
     // Import Google tokens controller
     const { listGoogleTokens, getUserGoogleToken, deleteUserGoogleToken, connectGoogleCalendar } = require('./controllers/googleTokensController');
 
+    // Import admin controller and middleware
+    const { adminController } = require('./controllers/adminController');
+    const { adminAuthMiddleware, adminLoginHandler, refreshAdminToken } = require('./middleware/adminAuth');
+
     // Import controllers
     const { UsersController } = require('./controllers/users');
     const { AgentsController } = require('./controllers/agents');
@@ -235,6 +239,61 @@ export class App {
     this.app.get('/api/google-tokens', listGoogleTokens);
     this.app.get('/api/google-tokens/:user_id', getUserGoogleToken);
     this.app.delete('/api/google-tokens/:user_id', deleteUserGoogleToken);
+
+    // ===================================================
+    // Admin Panel Routes (Super Admin)
+    // ===================================================
+    
+    // Admin authentication (public endpoints)
+    this.app.post('/admin/login', adminLoginHandler);
+    this.app.post('/admin/refresh', refreshAdminToken);
+
+    // Apply admin auth middleware to all /admin/* routes (except login/refresh)
+    this.app.use('/admin', adminAuthMiddleware);
+
+    // Dashboard & Analytics
+    this.app.get('/admin/dashboard', adminController.getDashboardStats);
+    this.app.get('/admin/rate-limits', adminController.getRateLimitStats);
+
+    // Users management
+    this.app.get('/admin/users', adminController.listUsers);
+    this.app.get('/admin/users/:userId', adminController.getUser);
+    this.app.delete('/admin/users/:userId', adminController.deleteUser);
+
+    // Phone Numbers management
+    this.app.get('/admin/phone-numbers', adminController.listPhoneNumbers);
+    this.app.patch('/admin/phone-numbers/:phoneNumberId', adminController.updatePhoneNumber);
+
+    // Agents management
+    this.app.get('/admin/agents', adminController.listAgents);
+    this.app.get('/admin/agents/:agentId', adminController.getAgent);
+    this.app.delete('/admin/agents/:agentId', adminController.deleteAgent);
+
+    // Conversations & Messages
+    this.app.get('/admin/conversations', adminController.listConversations);
+    this.app.get('/admin/conversations/:conversationId/messages', adminController.getConversationMessages);
+
+    // Templates management
+    this.app.get('/admin/templates', adminController.listTemplates);
+    this.app.get('/admin/templates/:templateId', adminController.getTemplate);
+    this.app.post('/admin/templates', adminController.createTemplate);
+    this.app.post('/admin/templates/:templateId/submit', adminController.submitTemplate);
+    this.app.delete('/admin/templates/:templateId', adminController.deleteTemplate);
+
+    // Contacts management
+    this.app.get('/admin/contacts', adminController.listContacts);
+    this.app.post('/admin/contacts/import', adminController.importContacts);
+    this.app.delete('/admin/contacts/:contactId', adminController.deleteContact);
+
+    // Campaigns management
+    this.app.get('/admin/campaigns', adminController.listCampaigns);
+    this.app.get('/admin/campaigns/:campaignId', adminController.getCampaign);
+    this.app.post('/admin/campaigns', adminController.createCampaign);
+    this.app.post('/admin/campaigns/:campaignId/start', adminController.startCampaign);
+    this.app.post('/admin/campaigns/:campaignId/pause', adminController.pauseCampaign);
+    this.app.post('/admin/campaigns/:campaignId/resume', adminController.resumeCampaign);
+    this.app.post('/admin/campaigns/:campaignId/cancel', adminController.cancelCampaign);
+    this.app.delete('/admin/campaigns/:campaignId', adminController.deleteCampaign);
 
     // Root endpoint
     this.app.get('/', (_req, res) => {

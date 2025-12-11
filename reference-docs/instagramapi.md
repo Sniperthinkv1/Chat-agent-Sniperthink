@@ -4,7 +4,7 @@ This document provides the authoritative reference for Instagram Business API in
 
 ## API Overview
 
-- **Base URL**: `https://graph.facebook.com/v18.0`
+- **Base URL**: `https://graph.facebook.com/v24.0`
 - **Authentication**: Access tokens per Instagram Business Account
 - **Rate Limits**: 200 requests per hour per access token
 - **Webhook**: Single endpoint handles both WhatsApp and Instagram
@@ -30,7 +30,7 @@ interface InstagramAccount {
 
 ### Webhook URL Setup
 ```bash
-POST https://graph.facebook.com/v18.0/{instagram-business-account-id}/subscribed_apps
+POST https://graph.facebook.com/v24.0/{instagram-business-account-id}/subscribed_apps
 ```
 
 ### Webhook Payload Structure
@@ -123,7 +123,7 @@ interface QuickReplyMessage {
 
 ### Send Message
 ```http
-POST https://graph.facebook.com/v18.0/{instagram-business-account-id}/messages
+POST https://graph.facebook.com/v24.0/{instagram-business-account-id}/messages
 Authorization: Bearer {access-token}
 Content-Type: application/json
 
@@ -140,7 +140,7 @@ Content-Type: application/json
 
 ### Get User Profile
 ```http
-GET https://graph.facebook.com/v18.0/{instagram-user-id}?fields=name,profile_pic&access_token={access-token}
+GET https://graph.facebook.com/v24.0/{instagram-user-id}?fields=name,profile_pic&access_token={access-token}
 ```
 
 Response:
@@ -172,7 +172,7 @@ async function sendInstagramMessage(
   accessToken: string
 ): Promise<{ message_id: string }> {
   const response = await fetch(
-    `https://graph.facebook.com/v18.0/${businessAccountId}/messages`,
+    `https://graph.facebook.com/v24.0/${businessAccountId}/messages`,
     {
       method: 'POST',
       headers: {

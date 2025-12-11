@@ -56,6 +56,21 @@ export interface AppConfig {
         instagramBaseUrl: string;
         webchatWidgetUrl: string;
     };
+    admin: {
+        password: string;
+        jwtSecret: string;
+        jwtExpiresIn: string;
+    };
+    templates: {
+        defaultLanguage: string;
+        syncIntervalMs: number;
+        maxVariablesPerTemplate: number;
+    };
+    campaigns: {
+        batchSize: number;
+        delayBetweenBatchesMs: number;
+        maxRecipientsPerCampaign: number;
+    };
 }
 
 // Configuration validation schema
@@ -115,9 +130,27 @@ const configSchema = Joi.object({
     }).required(),
 
     platforms: Joi.object({
-        whatsappBaseUrl: Joi.string().uri().default('https://graph.facebook.com/v18.0'),
-        instagramBaseUrl: Joi.string().uri().default('https://graph.facebook.com/v18.0'),
+        whatsappBaseUrl: Joi.string().uri().default('https://graph.facebook.com/v24.0'),
+        instagramBaseUrl: Joi.string().uri().default('https://graph.facebook.com/v24.0'),
         webchatWidgetUrl: Joi.string().uri().required(),
+    }).required(),
+
+    admin: Joi.object({
+        password: Joi.string().min(8).required(),
+        jwtSecret: Joi.string().min(32).required(),
+        jwtExpiresIn: Joi.string().default('24h'),
+    }).required(),
+
+    templates: Joi.object({
+        defaultLanguage: Joi.string().default('en'),
+        syncIntervalMs: Joi.number().integer().min(60000).default(300000), // 5 minutes
+        maxVariablesPerTemplate: Joi.number().integer().min(1).max(10).default(10),
+    }).required(),
+
+    campaigns: Joi.object({
+        batchSize: Joi.number().integer().min(1).max(100).default(50),
+        delayBetweenBatchesMs: Joi.number().integer().min(1000).default(5000),
+        maxRecipientsPerCampaign: Joi.number().integer().min(1).default(10000),
     }).required(),
 });
 
@@ -176,6 +209,21 @@ function loadConfig(): AppConfig {
             instagramBaseUrl: process.env['INSTAGRAM_API_BASE_URL'],
             webchatWidgetUrl: process.env['WEBCHAT_WIDGET_URL'],
         },
+        admin: {
+            password: process.env['SUPER_ADMIN_PASSWORD'],
+            jwtSecret: process.env['ADMIN_JWT_SECRET'],
+            jwtExpiresIn: process.env['ADMIN_JWT_EXPIRES_IN'] || '24h',
+        },
+        templates: {
+            defaultLanguage: process.env['TEMPLATES_DEFAULT_LANGUAGE'] || 'en',
+            syncIntervalMs: parseInt(process.env['TEMPLATES_SYNC_INTERVAL_MS'] || '300000', 10),
+            maxVariablesPerTemplate: parseInt(process.env['TEMPLATES_MAX_VARIABLES'] || '10', 10),
+        },
+        campaigns: {
+            batchSize: parseInt(process.env['CAMPAIGNS_BATCH_SIZE'] || '50', 10),
+            delayBetweenBatchesMs: parseInt(process.env['CAMPAIGNS_DELAY_BETWEEN_BATCHES_MS'] || '5000', 10),
+            maxRecipientsPerCampaign: parseInt(process.env['CAMPAIGNS_MAX_RECIPIENTS'] || '10000', 10),
+        },
     };
 
     const { error, value } = configSchema.validate(rawConfig, {
@@ -222,4 +270,7 @@ export const {
     extraction: extractionConfig,
     platforms: platformsConfig,
     rateLimit: rateLimitConfig,
+    admin: adminConfig,
+    templates: templatesConfig,
+    campaigns: campaignsConfig,
 } = config;

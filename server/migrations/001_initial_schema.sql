@@ -13,7 +13,7 @@ CREATE TABLE users (
 
 -- Phone Numbers and Instagram Handles
 -- Note: meta_phone_number_id is the ID from Meta (WABA ID for WhatsApp, Instagram Account ID for Instagram)
--- This is the ID used in Meta API calls like: POST /v21.0/{meta_phone_number_id}/messages
+-- This is the ID used in Meta API calls like: POST /v24.0/{meta_phone_number_id}/messages
 CREATE TABLE phone_numbers (
     id VARCHAR(50) PRIMARY KEY,
     user_id VARCHAR(50) NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,

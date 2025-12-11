@@ -4,6 +4,8 @@ import { db } from '../utils/database';
 import { logger } from '../utils/logger';
 import { ExtractionData } from '../models/Extraction';
 import { workerConfig, extractionConfig } from '../config';
+import { contactService } from '../services/contactService';
+import { appEventEmitter } from '../utils/eventEmitter';
 
 interface ExtractionWorkerConfig {
   intervalMs: number; // Polling interval (how often to check for conversations needing extraction)
@@ -221,6 +223,67 @@ class ExtractionWorker {
       
       // Update last_extraction_at timestamp
       await this.updateLastExtractionTimestamp(conversationId);
+
+      // Sync contact data from extraction and emit event for campaign triggers
+      try {
+        // Get conversation details to find user_id and customer_phone
+        const convResult = await db.query(
+          `SELECT c.customer_phone, c.conversation_id, a.user_id 
+           FROM conversations c 
+           JOIN agents a ON c.agent_id = a.agent_id 
+           WHERE c.conversation_id = $1`,
+          [conversationId]
+        );
+        
+        if (convResult.rows.length > 0) {
+          const { customer_phone, user_id } = convResult.rows[0];
+          
+          // Get extraction ID
+          const extractionResult = await db.query(
+            `SELECT extraction_id FROM extractions 
+             WHERE conversation_id = $1 AND is_latest = true 
+             ORDER BY extracted_at DESC LIMIT 1`,
+            [conversationId]
+          );
+          
+          const extractionId = extractionResult.rows[0]?.extraction_id || conversationId;
+          
+          // Sync extraction data to contacts table
+          await contactService.syncFromExtraction(
+            user_id,
+            extractionId,
+            conversationId,
+            customer_phone,
+            {
+              name: validation.data!.name,
+              email: validation.data!.email,
+              company: validation.data!.company,
+              lead_status_tag: validation.data!.lead_status_tag,
+            }
+          );
+          
+          // Emit extraction.complete event for campaign triggers
+          appEventEmitter.emitExtractionComplete({
+            extractionId,
+            conversationId,
+            userId: user_id,
+            customerPhone: customer_phone,
+            leadStatusTag: validation.data!.lead_status_tag,
+          });
+          
+          logger.info('Contact synced and extraction event emitted', {
+            conversationId,
+            userId: user_id,
+            customerPhone: customer_phone
+          });
+        }
+      } catch (syncError) {
+        // Don't fail the extraction if sync fails
+        logger.error('Failed to sync contact from extraction', {
+          conversationId,
+          error: syncError
+        });
+      }
       
       logger.info('Lead data extracted successfully', { 
         conversationId,

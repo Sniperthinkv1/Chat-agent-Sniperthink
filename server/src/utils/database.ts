@@ -4,11 +4,11 @@ import { logger } from './logger';
 
 export class DatabaseConnection {
   private static instance: DatabaseConnection;
-  private pool: Pool;
+  private _pool: Pool;
   private isConnected: boolean = false;
 
   private constructor() {
-    this.pool = new Pool({
+    this._pool = new Pool({
       connectionString: databaseConfig.url,
       max: databaseConfig.poolSize,
       idleTimeoutMillis: 30000,
@@ -27,23 +27,23 @@ export class DatabaseConnection {
   }
 
   private setupEventHandlers(): void {
-    this.pool.on('connect', () => {
+    this._pool.on('connect', () => {
       this.isConnected = true;
     });
 
-    this.pool.on('error', (err: Error) => {
+    this._pool.on('error', (err: Error) => {
       logger.error('Database pool error:', { error: err.message, stack: err.stack });
       this.isConnected = false;
     });
 
-    this.pool.on('remove', () => {
+    this._pool.on('remove', () => {
       // Silent - no logging needed
     });
   }
 
   public async connect(): Promise<void> {
     try {
-      const client = await this.pool.connect();
+      const client = await this._pool.connect();
       await client.query('SELECT NOW()');
       client.release();
       this.isConnected = true;
@@ -57,7 +57,7 @@ export class DatabaseConnection {
 
   public async disconnect(): Promise<void> {
     try {
-      await this.pool.end();
+      await this._pool.end();
       this.isConnected = false;
       logger.info('Database connection closed');
     } catch (error) {
@@ -69,7 +69,7 @@ export class DatabaseConnection {
   public async query<T extends Record<string, any> = any>(text: string, params?: any[]): Promise<QueryResult<T>> {
     const start = Date.now();
     try {
-      const result = await this.pool.query<T>(text, params);
+      const result = await this._pool.query<T>(text, params);
       return result;
     } catch (error) {
       const duration = Date.now() - start;
@@ -84,7 +84,7 @@ export class DatabaseConnection {
 
   public async getClient(): Promise<PoolClient> {
     try {
-      return await this.pool.connect();
+      return await this._pool.connect();
     } catch (error) {
       logger.error('Failed to get database client:', { error: (error as Error).message });
       throw error;
@@ -120,9 +120,9 @@ export class DatabaseConnection {
           responseTime: duration,
           currentTime: result.rows[0]?.current_time,
           version: result.rows[0]?.version?.split(' ')[0],
-          poolSize: this.pool.totalCount,
-          idleCount: this.pool.idleCount,
-          waitingCount: this.pool.waitingCount,
+          poolSize: this._pool.totalCount,
+          idleCount: this._pool.idleCount,
+          waitingCount: this._pool.waitingCount,
         },
       };
     } catch (error) {
@@ -131,9 +131,9 @@ export class DatabaseConnection {
         details: {
           connected: false,
           error: (error as Error).message,
-          poolSize: this.pool.totalCount,
-          idleCount: this.pool.idleCount,
-          waitingCount: this.pool.waitingCount,
+          poolSize: this._pool.totalCount,
+          idleCount: this._pool.idleCount,
+          waitingCount: this._pool.waitingCount,
         },
       };
     }
@@ -145,14 +145,21 @@ export class DatabaseConnection {
     waitingCount: number;
   } {
     return {
-      totalCount: this.pool.totalCount,
-      idleCount: this.pool.idleCount,
-      waitingCount: this.pool.waitingCount,
+      totalCount: this._pool.totalCount,
+      idleCount: this._pool.idleCount,
+      waitingCount: this._pool.waitingCount,
     };
   }
 
   public get isHealthy(): boolean {
     return this.isConnected;
+  }
+
+  /**
+   * Get the underlying pool instance for services that need direct Pool access
+   */
+  public get pool(): Pool {
+    return this._pool;
   }
 }
 

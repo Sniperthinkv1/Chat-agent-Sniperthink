@@ -523,8 +523,8 @@ LOG_FORMAT=json
 CORRELATION_ID_HEADER=x-correlation-id
 
 # Platform URLs (for outbound messaging)
-WHATSAPP_API_BASE_URL=https://graph.facebook.com/v22.0
-INSTAGRAM_API_BASE_URL=https://graph.facebook.com/v22.0
+WHATSAPP_API_BASE_URL=https://graph.facebook.com/v24.0
+INSTAGRAM_API_BASE_URL=https://graph.facebook.com/v24.0
 WEBCHAT_WIDGET_URL=https://your-domain.com/widget
 
 # Application Configuration
