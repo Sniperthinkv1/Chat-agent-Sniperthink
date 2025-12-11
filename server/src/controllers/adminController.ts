@@ -420,6 +420,16 @@ export async function addUserCredits(req: Request, res: Response): Promise<void>
     const { userId } = req.params;
     const { amount } = req.body;
 
+    if (!userId) {
+        res.status(400).json({
+            error: 'Bad Request',
+            message: 'userId is required',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+        return;
+    }
+
     if (!amount || amount <= 0) {
         res.status(400).json({
             error: 'Bad Request',
@@ -432,7 +442,7 @@ export async function addUserCredits(req: Request, res: Response): Promise<void>
 
     try {
         // Verify user exists
-        const user = await userService.getUserById(userId!);
+        const user = await userService.getUserById(userId);
         if (!user) {
             res.status(404).json({
                 error: 'Not Found',
@@ -621,6 +631,16 @@ export async function addUserPhoneNumber(req: Request, res: Response): Promise<v
         return;
     }
 
+    if (!userId) {
+        res.status(400).json({
+            error: 'Bad Request',
+            message: 'userId is required',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+        return;
+    }
+
     const validPlatforms = ['whatsapp', 'instagram', 'webchat'];
     if (!validPlatforms.includes(platform)) {
         res.status(400).json({
@@ -634,7 +654,7 @@ export async function addUserPhoneNumber(req: Request, res: Response): Promise<v
 
     try {
         // Verify user exists
-        const user = await userService.getUserById(userId!);
+        const user = await userService.getUserById(userId);
         if (!user) {
             res.status(404).json({
                 error: 'Not Found',
@@ -696,6 +716,16 @@ export async function addUserPhoneNumber(req: Request, res: Response): Promise<v
 export async function deleteUserPhoneNumber(req: Request, res: Response): Promise<void> {
     const correlationId = getCorrelationId(req);
     const { userId, phoneNumberId } = req.params;
+
+    if (!userId || !phoneNumberId) {
+        res.status(400).json({
+            error: 'Bad Request',
+            message: 'userId and phoneNumberId are required',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+        return;
+    }
 
     try {
         // Verify phone number belongs to user
@@ -793,8 +823,18 @@ export async function getAgent(req: Request, res: Response): Promise<void> {
     const correlationId = getCorrelationId(req);
     const { agentId } = req.params;
 
+    if (!agentId) {
+        res.status(400).json({
+            error: 'Bad Request',
+            message: 'agentId is required',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+        return;
+    }
+
     try {
-        const agent = await agentService.getAgentById(agentId!);
+        const agent = await agentService.getAgentById(agentId);
         if (!agent) {
             res.status(404).json({
                 error: 'Not Found',
@@ -831,6 +871,16 @@ export async function createUserAgent(req: Request, res: Response): Promise<void
     const { userId } = req.params;
     const { phone_number_id, prompt_id, name, description } = req.body;
 
+    if (!userId) {
+        res.status(400).json({
+            error: 'Bad Request',
+            message: 'userId is required',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+        return;
+    }
+
     if (!phone_number_id || !prompt_id || !name) {
         res.status(400).json({
             error: 'Bad Request',
@@ -843,7 +893,7 @@ export async function createUserAgent(req: Request, res: Response): Promise<void
 
     try {
         // Verify user exists
-        const user = await userService.getUserById(userId!);
+        const user = await userService.getUserById(userId);
         if (!user) {
             res.status(404).json({
                 error: 'Not Found',
@@ -907,6 +957,16 @@ export async function updateUserAgent(req: Request, res: Response): Promise<void
     const correlationId = getCorrelationId(req);
     const { userId, agentId } = req.params;
     const { name, description, prompt_id } = req.body;
+
+    if (!userId || !agentId) {
+        res.status(400).json({
+            error: 'Bad Request',
+            message: 'userId and agentId are required',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+        return;
+    }
 
     try {
         const fields: string[] = [];
@@ -987,8 +1047,18 @@ export async function deleteAgent(req: Request, res: Response): Promise<void> {
     const correlationId = getCorrelationId(req);
     const { agentId } = req.params;
 
+    if (!agentId) {
+        res.status(400).json({
+            error: 'Bad Request',
+            message: 'agentId is required',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+        return;
+    }
+
     try {
-        const deleted = await agentService.deleteAgent(agentId!);
+        const deleted = await agentService.deleteAgent(agentId);
         if (!deleted) {
             res.status(404).json({
                 error: 'Not Found',
