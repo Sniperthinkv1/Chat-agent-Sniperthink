@@ -1,0 +1,47 @@
+{
+  "name": "Multi-Channel AI Agent Quality Gate",
+  "version": "1.0.0",
+  "rules": {
+    "coverage": {
+      "enabled": true,
+      "thresholds": {
+        "lines": 80,
+        "statements": 80,
+        "functions": 80,
+        "branches": 80
+      }
+    },
+    "linting": {
+      "enabled": true,
+      "maxWarnings": 0,
+      "maxErrors": 0
+    },
+    "testing": {
+      "enabled": true,
+      "requireAllTestsPass": true,
+      "minTestCount": 50
+    },
+    "build": {
+      "enabled": true,
+      "requireSuccessfulBuild": true
+    },
+    "security": {
+      "enabled": true,
+      "allowedVulnerabilities": {
+        "critical": 0,
+        "high": 0,
+        "moderate": 5,
+        "low": 10
+      }
+    }
+  },
+  "enforcement": {
+    "preCommit": ["linting", "testing"],
+    "prePush": ["coverage", "build"],
+    "ci": ["linting", "testing", "coverage", "build", "security"]
+  },
+  "notifications": {
+    "onFailure": true,
+    "onSuccess": false
+  }
+}

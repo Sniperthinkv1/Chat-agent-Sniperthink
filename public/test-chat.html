@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Webchat Widget</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin: 20px 0;
+        }
+        h1 {
+            color: #333;
+            margin-top: 0;
+            font-size: 32px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .badge.success {
+            background: #4caf50;
+            color: white;
+        }
+        .info-box {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .success-box {
+            background: #e8f5e9;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #4caf50;
+        }
+        .warning-box {
+            background: #fff3e0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #ff9800;
+        }
+        h2 {
+            color: #555;
+            font-size: 24px;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #666;
+            font-size: 18px;
+            margin-top: 0;
+        }
+        ul, ol {
+            line-height: 1.8;
+        }
+        li {
+            margin: 10px 0;
+        }
+        code {
+            background: #f5f5f5;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #d32f2f;
+        }
+        .step {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 3px solid #667eea;
+        }
+        .step-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: white;
+            font-size: 14px;
+        }
+        .emoji {
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><span class="emoji">🤖</span> AI Chat Widget Test</h1>
+        <span class="badge success">✅ READY TO TEST</span>
+        
+        <div class="success-box">
+            <h3>✅ Widget is Loading...</h3>
+            <p><strong>Look at the bottom right corner of your screen!</strong></p>
+            <p>You should see a blue chat button with a 💬 icon.</p>
+        </div>
+
+        <div class="warning-box">
+            <h3>⚠️ IMPORTANT: Update webchat_id</h3>
+            <p>Before testing, you need to:</p>
+            <ol>
+                <li>Create a webchat channel (see instructions below)</li>
+                <li>Copy the <code>webchat_id</code> from the response</li>
+                <li>Replace <code>REPLACE_WITH_YOUR_WEBCHAT_ID</code> at the bottom of this page</li>
+            </ol>
+        </div>
+
+        <h2>📋 How to Create a Webchat Channel</h2>
+        <div class="step">
+            <span class="step-number">1</span>
+            <strong>Open PowerShell and run:</strong>
+            <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; margin-top: 10px;">curl -X POST http://127.0.0.1:3000/api/users/user_test_webchat/webchat/channels `
+  -H "Content-Type: application/json" `
+  -d '{
+    "prompt_id": "pmpt_68de2bd80fa08196ab95184e7787c6e30c231f4a29f082a0",
+    "name": "My Test Chat"
+  }'</pre>
+        </div>
+
+        <div class="step">
+            <span class="step-number">2</span>
+            <strong>Copy the <code>webchat_id</code> from the response</strong>
+            <p>Look for something like: <code>"webchat_id": "webchat_user_test_webchat_abc123"</code></p>
+        </div>
+
+        <div class="step">
+            <span class="step-number">3</span>
+            <strong>Update this HTML file</strong>
+            <p>Find the line at the bottom: <code>&lt;webchat-widget agent-id="REPLACE_WITH_YOUR_WEBCHAT_ID"&gt;</code></p>
+            <p>Replace <code>REPLACE_WITH_YOUR_WEBCHAT_ID</code> with your actual webchat_id</p>
+        </div>
+
+        <div class="step">
+            <span class="step-number">4</span>
+            <strong>Reload this page</strong>
+            <p>Press F5 or refresh the browser</p>
+        </div>
+
+        <h2>🧪 Testing Steps</h2>
+        <div class="info-box">
+            <h3>First Time User Flow:</h3>
+            <ol>
+                <li><strong>Click the chat button</strong> - Blue circle in bottom right</li>
+                <li><strong>Fill in the form:</strong>
+                    <ul>
+                        <li>Name: <code>Test User</code></li>
+                        <li>Phone: <code>+1234567890</code></li>
+                    </ul>
+                </li>
+                <li><strong>Click "Start Chat"</strong></li>
+                <li><strong>Send a message:</strong> Type "Hello" and press Enter</li>
+                <li><strong>Wait for response:</strong> Should appear in 3-5 seconds</li>
+            </ol>
+        </div>
+
+        <div class="info-box">
+            <h3>Test Session Persistence:</h3>
+            <ol>
+                <li><strong>Reload the page</strong> (F5)</li>
+                <li><strong>Click chat button</strong> - Should open directly to chat (no form)</li>
+                <li><strong>Previous messages should be visible</strong></li>
+                <li><strong>Send another message</strong> - Should work normally</li>
+            </ol>
+        </div>
+
+        <h2>✅ What to Check</h2>
+        <ul>
+            <li>✅ Chat button appears in bottom right</li>
+            <li>✅ Widget opens when clicked</li>
+            <li>✅ Form accepts name and phone</li>
+            <li>✅ Messages send successfully</li>
+            <li>✅ AI responses appear (3-5 seconds)</li>
+            <li>✅ Typing indicator shows while waiting</li>
+            <li>✅ Session persists across page reloads</li>
+            <li>✅ Conversation context is maintained</li>
+        </ul>
+
+        <h2>🐛 Troubleshooting</h2>
+        <div class="info-box">
+            <h3>Widget doesn't appear?</h3>
+            <ul>
+                <li>Press F12 to open browser console</li>
+                <li>Check for JavaScript errors</li>
+                <li>Verify server is running: <code>http://localhost:3000/widget.js</code></li>
+                <li>Make sure you updated the webchat_id</li>
+            </ul>
+        </div>
+
+        <div class="info-box">
+            <h3>Can't send messages?</h3>
+            <ul>
+                <li>Check browser console (F12) for errors</li>
+                <li>Verify webchat_id is correct</li>
+                <li>Check server logs in terminal</li>
+            </ul>
+        </div>
+
+        <div class="info-box">
+            <h3>No AI response?</h3>
+            <ul>
+                <li>Check server logs for OpenAI errors</li>
+                <li>Verify OpenAI API key is valid</li>
+                <li>Wait up to 10 seconds (first response can be slow)</li>
+            </ul>
+        </div>
+
+        <h2>📱 Test on Mobile</h2>
+        <div class="step">
+            <p>Find your computer's IP address:</p>
+            <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">ipconfig</pre>
+            <p>Look for IPv4 Address (e.g., 192.168.1.100)</p>
+            <p>On your phone, go to: <code>http://YOUR_IP:3000/test-chat.html</code></p>
+        </div>
+
+        <h2>🎉 Success Criteria</h2>
+        <div class="success-box">
+            <p>Your webchat is working correctly if:</p>
+            <ul>
+                <li>✅ Widget loads and button appears</li>
+                <li>✅ Form submission works</li>
+                <li>✅ Messages send instantly</li>
+                <li>✅ AI responses appear within 5 seconds</li>
+                <li>✅ Session persists on page reload</li>
+                <li>✅ Conversation context is maintained</li>
+                <li>✅ Works on mobile devices</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>🚀 Multi-Channel AI Agent - Webchat Widget Test</p>
+        <p>Made with ❤️ for testing</p>
+    </div>
+
+    <!-- 
+        ⚠️ IMPORTANT: Replace 'REPLACE_WITH_YOUR_WEBCHAT_ID' with your actual webchat_id
+        
+        Example:
+        <webchat-widget agent-id="webchat_user_test_webchat_abc123"></webchat-widget>
+    -->
+   <!-- webchat AI Chat Widget - Just copy & paste these 2 lines! -->  
+<webchat-widget agent-id="webchat_user_test_webchat_h3iy02lcy"></webchat-widget>
+<script src="http://localhost:3000/widget.js" async type="text/javascript"></script>
+</body>
+</html>

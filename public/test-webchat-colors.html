@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Webchat Widget with Colors</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    .container {
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 1.1rem;
+    }
+
+    .info-box {
+      background: #f8f9fa;
+      border-left: 4px solid #3B82F6;
+      padding: 20px;
+      margin-bottom: 30px;
+      border-radius: 8px;
+    }
+
+    .info-box h3 {
+      margin: 0 0 10px 0;
+      color: #333;
+    }
+
+    .info-box p {
+      margin: 5px 0;
+      color: #666;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+    }
+
+    .test-section {
+      margin: 30px 0;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    .test-section h3 {
+      margin: 0 0 15px 0;
+      color: #333;
+    }
+
+    .test-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .test-btn {
+      padding: 12px 20px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .test-btn:hover {
+      border-color: #3B82F6;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .test-btn.active {
+      background: #3B82F6;
+      color: white;
+      border-color: #3B82F6;
+    }
+
+    .color-preview {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .color-box {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: 2px solid #e0e0e0;
+    }
+
+    .color-label {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .instructions {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 20px;
+      margin: 30px 0;
+      border-radius: 8px;
+    }
+
+    .instructions h3 {
+      margin: 0 0 10px 0;
+      color: #856404;
+    }
+
+    .instructions ol {
+      margin: 10px 0;
+      padding-left: 20px;
+      color: #856404;
+    }
+
+    .instructions li {
+      margin: 8px 0;
+    }
+
+    .success {
+      background: #d4edda;
+      border-left: 4px solid #28a745;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 8px;
+      color: #155724;
+    }
+
+    code {
+      background: #f0f0f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 Webchat Widget Color Test</h1>
+    <p class="subtitle">Test your webchat widget with different color schemes</p>
+
+    <!-- Channel Info -->
+    <div class="info-box">
+      <h3>📋 Your Webchat Channel</h3>
+      <p><strong>Webchat ID:</strong> webchat_user_test_webchat_uc3w9e8ms</p>
+      <p><strong>Agent ID:</strong> agent_webchat_user_test_webchat_uc3w9e8ms</p>
+      <p><strong>Created:</strong> 2025-10-04</p>
+    </div>
+
+    <!-- Success Message -->
+    <div class="success">
+      ✅ <strong>Channel Created Successfully!</strong> The widget is now active and ready to test.
+    </div>
+
+    <!-- Instructions -->
+    <div class="instructions">
+      <h3>📝 How to Test</h3>
+      <ol>
+        <li>Click any color preset button below to change the widget colors</li>
+        <li>Look for the chat button in the bottom-right corner (💬)</li>
+        <li>Click the chat button to open the widget</li>
+        <li>Send a test message to see the AI response</li>
+        <li>Notice how the colors change based on your selection</li>
+      </ol>
+    </div>
+
+    <!-- Color Test Section -->
+    <div class="test-section">
+      <h3>🎨 Test Different Color Schemes</h3>
+      <p style="color: #666; margin-bottom: 15px;">Click a button to apply that color scheme to the widget:</p>
+
+      <div class="test-buttons">
+        <button class="test-btn active" onclick="changeColors('#3B82F6', '#EFF6FF', this)">
+          <div>💙 Blue (Default)</div>
+          <div class="color-preview">
+            <div class="color-box" style="background: #3B82F6;"></div>
+            <div class="color-box" style="background: #EFF6FF;"></div>
+          </div>
+        </button>
+
+        <button class="test-btn" onclick="changeColors('#8B5CF6', '#F5F3FF', this)">
+          <div>💜 Purple</div>
+          <div class="color-preview">
+            <div class="color-box" style="background: #8B5CF6;"></div>
+            <div class="color-box" style="background: #F5F3FF;"></div>
+          </div>
+        </button>
+
+        <button class="test-btn" onclick="changeColors('#10B981', '#ECFDF5', this)">
+          <div>💚 Green</div>
+          <div class="color-preview">
+            <div class="color-box" style="background: #10B981;"></div>
+            <div class="color-box" style="background: #ECFDF5;"></div>
+          </div>
+        </button>
+
+        <button class="test-btn" onclick="changeColors('#F59E0B', '#FEF3C7', this)">
+          <div>🧡 Orange</div>
+          <div class="color-preview">
+            <div class="color-box" style="background: #F59E0B;"></div>
+            <div class="color-box" style="background: #FEF3C7;"></div>
+          </div>
+        </button>
+
+        <button class="test-btn" onclick="changeColors('#EF4444', '#FEE2E2', this)">
+          <div>❤️ Red</div>
+          <div class="color-preview">
+            <div class="color-box" style="background: #EF4444;"></div>
+            <div class="color-box" style="background: #FEE2E2;"></div>
+          </div>
+        </button>
+
+        <button class="test-btn" onclick="changeColors('#14B8A6', '#F0FDFA', this)">
+          <div>💎 Teal</div>
+          <div class="color-preview">
+            <div class="color-box" style="background: #14B8A6;"></div>
+            <div class="color-box" style="background: #F0FDFA;"></div>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Current Colors Display -->
+    <div class="test-section">
+      <h3>🎯 Current Widget Colors</h3>
+      <p style="color: #666; margin-bottom: 15px;">These are the colors currently applied to the widget:</p>
+      <div style="display: flex; gap: 30px;">
+        <div>
+          <div class="color-label">Primary Color</div>
+          <div class="color-box" id="current-primary" style="background: #3B82F6; width: 80px; height: 80px;"></div>
+          <code id="primary-code">#3B82F6</code>
+        </div>
+        <div>
+          <div class="color-label">Secondary Color</div>
+          <div class="color-box" id="current-secondary" style="background: #EFF6FF; width: 80px; height: 80px;"></div>
+          <code id="secondary-code">#EFF6FF</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- Configuration Link -->
+    <div class="test-section">
+      <h3>⚙️ Advanced Configuration</h3>
+      <p style="color: #666; margin-bottom: 15px;">Want to customize colors visually?</p>
+      <a href="http://localhost:3000/widget-config.html?agent_id=webchat_user_test_webchat_uc3w9e8ms" 
+         target="_blank"
+         style="display: inline-block; padding: 12px 24px; background: #3B82F6; color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
+        🎨 Open Visual Configuration Tool
+      </a>
+    </div>
+
+    <!-- Test Messages -->
+    <div class="test-section">
+      <h3>💬 Test Messages</h3>
+      <p style="color: #666; margin-bottom: 15px;">Try sending these messages to test the AI:</p>
+      <ul style="color: #666;">
+        <li>"Hello, I need help with my order"</li>
+        <li>"What are your business hours?"</li>
+        <li>"I'm interested in your services"</li>
+        <li>"Can you tell me about pricing?"</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Webchat Widget -->
+  <webchat-widget 
+    id="test-widget"
+    agent-id="webchat_user_test_webchat_uc3w9e8ms"
+    primary-color="#3B82F6"
+    secondary-color="#EFF6FF">
+  </webchat-widget>
+
+  <!-- Widget Script -->
+  <script src="/widget.js" async></script>
+
+  <script>
+    function changeColors(primary, secondary, button) {
+      // Remove active class from all buttons
+      document.querySelectorAll('.test-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      // Add active class to clicked button
+      button.classList.add('active');
+
+      // Update current colors display
+      document.getElementById('current-primary').style.background = primary;
+      document.getElementById('current-secondary').style.background = secondary;
+      document.getElementById('primary-code').textContent = primary;
+      document.getElementById('secondary-code').textContent = secondary;
+
+      // Remove existing widget
+      const existingWidget = document.getElementById('test-widget');
+      if (existingWidget) {
+        existingWidget.remove();
+      }
+
+      // Create new widget with new colors
+      const newWidget = document.createElement('webchat-widget');
+      newWidget.id = 'test-widget';
+      newWidget.setAttribute('agent-id', 'webchat_user_test_webchat_uc3w9e8ms');
+      newWidget.setAttribute('primary-color', primary);
+      newWidget.setAttribute('secondary-color', secondary);
+      
+      document.body.appendChild(newWidget);
+
+      console.log('Widget colors changed:', { primary, secondary });
+    }
+  </script>
+</body>
+</html>

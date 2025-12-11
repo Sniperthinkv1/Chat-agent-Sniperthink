@@ -1,0 +1,1317 @@
+openapi: 3.0.3
+info:
+  title: Multi-Channel AI Agent API
+  description: |
+    A scalable multi-channel AI agent service that enables businesses to deploy AI chatbots 
+    across WhatsApp, Instagram, and Web Chat platforms.
+    
+    ## Features
+    - Multi-tenant architecture with user_id isolation
+    - Support for WhatsApp, Instagram, and Web Chat
+    - AI-powered responses using OpenAI
+    - Automatic lead extraction and scoring
+    - Message delivery tracking
+    - Credit-based usage model
+    
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: https://api.example.com
+    description: Production server
+  - url: http://localhost:3000
+    description: Development server
+
+tags:
+  - name: Health
+    description: Health check and system status
+  - name: Users
+    description: User and phone number management
+  - name: Agents
+    description: AI agent configuration and management
+  - name: Messages
+    description: Message retrieval and conversation APIs
+  - name: Extractions
+    description: Lead data extraction endpoints
+  - name: Webchat
+    description: Web chat widget configuration and messaging
+  - name: Webhooks
+    description: Meta platform webhook handlers
+  - name: Cache
+    description: Cache management endpoints
+
+paths:
+  /ping:
+    get:
+      tags:
+        - Health
+      summary: Simple ping endpoint
+      operationId: ping
+      responses:
+        '200':
+          description: Pong response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pong:
+                    type: boolean
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  timestamp:
+                    type: string
+                  service:
+                    type: string
+                  version:
+                    type: string
+                  environment:
+                    type: string
+                  checks:
+                    type: object
+
+  /users/{user_id}/phone_numbers:
+    post:
+      tags:
+        - Users
+      summary: Add a phone number
+      operationId: addPhoneNumber
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+                - platform
+                - meta_phone_number_id
+                - access_token
+              properties:
+                id:
+                  type: string
+                platform:
+                  type: string
+                  enum: [whatsapp, instagram, webchat]
+                meta_phone_number_id:
+                  type: string
+                access_token:
+                  type: string
+                display_name:
+                  type: string
+      responses:
+        '201':
+          description: Phone number added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                  timestamp:
+                    type: string
+                  correlationId:
+                    type: string
+    
+    get:
+      tags:
+        - Users
+      summary: List phone numbers
+      operationId: listPhoneNumbers
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: platform
+          in: query
+          schema:
+            type: string
+            enum: [whatsapp, instagram, webchat]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Phone numbers retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                  count:
+                    type: integer
+
+  /users/{user_id}/phone_numbers/{phone_number_id}:
+    delete:
+      tags:
+        - Users
+      summary: Delete a phone number
+      operationId: deletePhoneNumber
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: phone_number_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Phone number deleted successfully
+
+  /users/{user_id}/credits:
+    get:
+      tags:
+        - Users
+      summary: Get credit balance
+      operationId: getCredits
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Credits retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      user_id:
+                        type: string
+                      remaining_credits:
+                        type: integer
+                      last_updated:
+                        type: string
+
+  /users/{user_id}/credits/add:
+    post:
+      tags:
+        - Users
+      summary: Add credits
+      operationId: addCredits
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - amount
+              properties:
+                amount:
+                  type: integer
+                  minimum: 1
+      responses:
+        '200':
+          description: Credits added successfully
+
+  /users/{user_id}/agents:
+    post:
+      tags:
+        - Agents
+      summary: Create an agent
+      operationId: createAgent
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - agent_id
+                - phone_number_id
+                - prompt_id
+                - name
+              properties:
+                agent_id:
+                  type: string
+                phone_number_id:
+                  type: string
+                prompt_id:
+                  type: string
+                name:
+                  type: string
+      responses:
+        '201':
+          description: Agent created successfully
+    
+    get:
+      tags:
+        - Agents
+      summary: List agents
+      operationId: listAgents
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Agents retrieved successfully
+
+  /users/{user_id}/agents/{agent_id}:
+    get:
+      tags:
+        - Agents
+      summary: Get an agent
+      operationId: getAgent
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: agent_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Agent retrieved successfully
+    
+    patch:
+      tags:
+        - Agents
+      summary: Update an agent
+      operationId: updateAgent
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: agent_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                prompt_id:
+                  type: string
+      responses:
+        '200':
+          description: Agent updated successfully
+    
+    delete:
+      tags:
+        - Agents
+      summary: Delete an agent
+      operationId: deleteAgent
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: agent_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Agent deleted successfully
+
+  /users/{user_id}/messages:
+    get:
+      tags:
+        - Messages
+      summary: Get messages
+      operationId: getMessages
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: conversation_id
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Messages retrieved successfully
+
+  /users/{user_id}/messages/stats:
+    get:
+      tags:
+        - Messages
+      summary: Get message statistics
+      operationId: getMessageStats
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: time_range
+          in: query
+          schema:
+            type: string
+            enum: [hour, day, week, month]
+            default: day
+      responses:
+        '200':
+          description: Statistics retrieved successfully
+
+  /users/{user_id}/conversations:
+    get:
+      tags:
+        - Messages
+      summary: Get conversations
+      operationId: getConversations
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: is_active
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Conversations retrieved successfully
+
+  /users/{user_id}/conversations/{conversation_id}:
+    get:
+      tags:
+        - Messages
+      summary: Get a conversation
+      operationId: getConversation
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: conversation_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Conversation retrieved successfully
+
+  /users/{user_id}/conversations/{conversation_id}/messages:
+    get:
+      tags:
+        - Messages
+      summary: Get conversation messages
+      operationId: getConversationMessages
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: conversation_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Messages retrieved successfully
+
+  /users/{user_id}/extractions:
+    get:
+      tags:
+        - Extractions
+      summary: Get extractions
+      operationId: getExtractions
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: latest_only
+          in: query
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Extractions retrieved successfully
+
+  /users/{user_id}/extractions/stats:
+    get:
+      tags:
+        - Extractions
+      summary: Get extraction statistics
+      operationId: getExtractionStats
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Statistics retrieved successfully
+
+  /users/{user_id}/extractions/export:
+    get:
+      tags:
+        - Extractions
+      summary: Export extractions
+      operationId: exportExtractions
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [json, csv]
+            default: json
+      responses:
+        '200':
+          description: Extractions exported successfully
+
+  /users/{user_id}/extractions/{extraction_id}:
+    get:
+      tags:
+        - Extractions
+      summary: Get an extraction
+      operationId: getExtraction
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: extraction_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Extraction retrieved successfully
+
+  /users/{user_id}/conversations/{conversation_id}/extraction:
+    get:
+      tags:
+        - Extractions
+      summary: Get conversation extraction
+      operationId: getConversationExtraction
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: conversation_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Extraction retrieved successfully
+
+  /users/{user_id}/conversations/{conversation_id}/extract:
+    post:
+      tags:
+        - Extractions
+      summary: Trigger extraction
+      operationId: triggerExtraction
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: conversation_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Extraction job queued successfully
+
+  /webhook/meta:
+    get:
+      tags:
+        - Webhooks
+      summary: Webhook verification
+      operationId: verifyWebhook
+      parameters:
+        - name: hub.mode
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: hub.verify_token
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: hub.challenge
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Verification successful
+    
+    post:
+      tags:
+        - Webhooks
+      summary: Receive webhook
+      operationId: receiveWebhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Webhook received and processed
+
+  /api/cache/invalidate/session:
+    post:
+      tags:
+        - Cache
+      summary: Invalidate session cache
+      operationId: invalidateSessionCache
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - phoneNumberId
+                - customerPhone
+              properties:
+                phoneNumberId:
+                  type: string
+                customerPhone:
+                  type: string
+      responses:
+        '200':
+          description: Cache invalidated successfully
+
+  /api/cache/invalidate/phone-number:
+    post:
+      tags:
+        - Cache
+      summary: Invalidate phone number cache
+      operationId: invalidatePhoneNumberCache
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - phoneNumberId
+              properties:
+                phoneNumberId:
+                  type: string
+      responses:
+        '200':
+          description: Cache invalidated successfully
+
+  /api/cache/invalidate/agent:
+    post:
+      tags:
+        - Cache
+      summary: Invalidate agent cache
+      operationId: invalidateAgentCache
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - agentId
+              properties:
+                agentId:
+                  type: string
+      responses:
+        '200':
+          description: Cache invalidated successfully
+
+  /api/cache/invalidate/credits:
+    post:
+      tags:
+        - Cache
+      summary: Invalidate credits cache
+      operationId: invalidateCreditsCache
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+              properties:
+                userId:
+                  type: string
+      responses:
+        '200':
+          description: Cache invalidated successfully
+
+  /api/cache/clear-all:
+    post:
+      tags:
+        - Cache
+      summary: Clear all cache
+      operationId: clearAllCache
+      responses:
+        '503':
+          description: Feature disabled
+
+  /api/cache/stats:
+    get:
+      tags:
+        - Cache
+      summary: Get cache statistics
+      operationId: getCacheStats
+      responses:
+        '200':
+          description: Statistics retrieved
+
+  # Webchat Endpoints
+  /api/users/{user_id}/webchat/channels:
+    post:
+      tags:
+        - Webchat
+      summary: Create a new webchat channel
+      description: |
+        Creates a new webchat channel with an AI agent. Returns embed code with customizable colors.
+        The response includes a configuration URL where users can visually customize widget colors.
+      operationId: createWebchatChannel
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - prompt_id
+                - name
+              properties:
+                prompt_id:
+                  type: string
+                  description: OpenAI prompt/assistant ID
+                  example: "prompt_abc123"
+                name:
+                  type: string
+                  description: Display name for the webchat channel
+                  example: "Customer Support Chat"
+      responses:
+        '201':
+          description: Webchat channel created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      webchat_id:
+                        type: string
+                        description: Unique webchat channel identifier
+                        example: "webchat_user_123_abc"
+                      phone_number_id:
+                        type: string
+                        description: Internal phone number ID
+                      agent_id:
+                        type: string
+                        description: AI agent ID
+                      prompt_id:
+                        type: string
+                        description: OpenAI prompt ID
+                      name:
+                        type: string
+                        description: Channel name
+                      embed_code:
+                        type: string
+                        description: Ready-to-use HTML embed code with color customization
+                        example: |
+                          <!-- AI Chat Widget -->
+                          <webchat-widget 
+                            agent-id="webchat_user_123_abc"
+                            primary-color="#3B82F6"
+                            secondary-color="#EFF6FF">
+                          </webchat-widget>
+                          <script src="https://api.example.com/widget.js" async></script>
+                      config_url:
+                        type: string
+                        description: URL to visual configuration page for customizing colors
+                        example: "https://api.example.com/widget-config.html?agent_id=webchat_user_123_abc"
+                      created_at:
+                        type: string
+                        format: date-time
+                  timestamp:
+                    type: string
+                    format: date-time
+                  correlationId:
+                    type: string
+        '400':
+          description: Bad request - missing required fields
+        '404':
+          description: User not found
+
+  /api/webchat/{webchat_id}/config:
+    get:
+      tags:
+        - Webchat
+      summary: Get configuration page URL
+      description: |
+        Returns the URL to the visual configuration page where users can customize
+        widget colors, preview changes, and copy the embed code.
+      operationId: getWebchatConfigPage
+      parameters:
+        - name: webchat_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Webchat channel identifier
+          example: "webchat_user_123_abc"
+      responses:
+        '200':
+          description: Configuration URL retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      webchat_id:
+                        type: string
+                      config_url:
+                        type: string
+                        description: URL to open for visual color customization
+                        example: "https://api.example.com/widget-config.html?agent_id=webchat_user_123_abc"
+                      message:
+                        type: string
+                        example: "Open this URL to customize widget colors and get embed code"
+                  timestamp:
+                    type: string
+                    format: date-time
+        '404':
+          description: Webchat channel not found
+
+  /api/webchat/{webchat_id}/embed:
+    get:
+      tags:
+        - Webchat
+      summary: Get embed code
+      description: |
+        Returns the HTML embed code for the webchat widget with default colors.
+        Users can modify the color attributes in the returned code.
+      operationId: getWebchatEmbedCode
+      parameters:
+        - name: webchat_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Webchat channel identifier
+      responses:
+        '200':
+          description: Embed code retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      webchat_id:
+                        type: string
+                      embed_code:
+                        type: string
+                        description: HTML embed code with color customization support
+                  timestamp:
+                    type: string
+                    format: date-time
+        '404':
+          description: Webchat channel not found
+
+  /api/webchat/{webchat_id}/messages:
+    post:
+      tags:
+        - Webchat
+      summary: Send message from website visitor
+      description: |
+        Sends a message from a website visitor to the AI agent. The message is queued
+        for processing and the AI response will be delivered via SSE stream.
+      operationId: sendWebchatMessage
+      parameters:
+        - name: webchat_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Webchat channel identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - message
+                - session_id
+                - visitor_phone
+              properties:
+                message:
+                  type: string
+                  description: Message text from visitor
+                  example: "Hello, I need help with my order"
+                session_id:
+                  type: string
+                  description: Unique session identifier
+                  example: "session_1234567890_abc"
+                visitor_phone:
+                  type: string
+                  description: Visitor identifier (session_id for webchat)
+                  example: "session_1234567890_abc"
+                visitor_name:
+                  type: string
+                  description: Optional visitor name
+                  example: "John Doe"
+      responses:
+        '200':
+          description: Message queued successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      message_id:
+                        type: string
+                      conversation_id:
+                        type: string
+                      status:
+                        type: string
+                        example: "queued"
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad request - missing required fields
+        '404':
+          description: Webchat channel not found
+
+    get:
+      tags:
+        - Webchat
+      summary: Get messages for a conversation
+      description: |
+        Retrieves messages for a specific visitor's conversation. Used for loading
+        message history when a returning visitor opens the chat.
+      operationId: getWebchatMessages
+      parameters:
+        - name: webchat_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Webchat channel identifier
+        - name: visitor_phone
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Visitor identifier (session_id)
+        - name: since
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+          description: Only return messages after this timestamp
+      responses:
+        '200':
+          description: Messages retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      messages:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            message_id:
+                              type: string
+                            message_text:
+                              type: string
+                            sender:
+                              type: string
+                              enum: [user, agent]
+                            timestamp:
+                              type: string
+                              format: date-time
+                            sequence_no:
+                              type: integer
+                      conversation_id:
+                        type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /api/webchat/{webchat_id}/stream:
+    get:
+      tags:
+        - Webchat
+      summary: Server-Sent Events stream for real-time messages
+      description: |
+        Establishes an SSE connection for receiving real-time messages and typing indicators.
+        The connection remains open and sends events as they occur.
+      operationId: streamWebchatMessages
+      parameters:
+        - name: webchat_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Webchat channel identifier
+        - name: session_id
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Unique session identifier
+      responses:
+        '200':
+          description: SSE stream established
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: |
+                  Server-Sent Events stream. Events include:
+                  - connected: Connection established
+                  - message: New message from AI agent
+                  - typing: Typing indicator status
+        '400':
+          description: Bad request - missing required parameters
+        '404':
+          description: Webchat channel not found
+
+  /api/webchat/{webchat_id}/init:
+    post:
+      tags:
+        - Webchat
+      summary: Initialize chat session
+      description: |
+        Initializes a chat session and checks if the visitor is returning.
+        Returns conversation history if available.
+      operationId: initWebchatSession
+      parameters:
+        - name: webchat_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Webchat channel identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - visitor_phone
+                - session_id
+              properties:
+                visitor_phone:
+                  type: string
+                  description: Visitor identifier
+                session_id:
+                  type: string
+                  description: Session identifier
+      responses:
+        '200':
+          description: Session initialized successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      session_id:
+                        type: string
+                      is_returning_visitor:
+                        type: boolean
+                      conversation_id:
+                        type: string
+                      previous_messages:
+                        type: integer
+                      previous_platform:
+                        type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /api/webchat/{webchat_id}/verify-phone:
+    post:
+      tags:
+        - Webchat
+      summary: Verify phone number and get user info
+      description: |
+        Verifies a phone number and retrieves associated user information from
+        previous extractions if available.
+      operationId: verifyWebchatPhone
+      parameters:
+        - name: webchat_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Webchat channel identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - phone
+              properties:
+                phone:
+                  type: string
+                  description: Phone number to verify
+                  example: "+1234567890"
+      responses:
+        '200':
+          description: Phone verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      phone:
+                        type: string
+                      has_name:
+                        type: boolean
+                      name:
+                        type: string
+                      email:
+                        type: string
+                      company:
+                        type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Invalid phone format
+
+components:
+  schemas:
+    WebchatColorConfig:
+      type: object
+      description: Color configuration for webchat widget
+      properties:
+        primary_color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+          description: Primary color for buttons and user messages (hex format)
+          example: "#3B82F6"
+          default: "#3B82F6"
+        secondary_color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+          description: Secondary color for background accents (hex format)
+          example: "#EFF6FF"
+          default: "#EFF6FF"
+    
+    WebchatColorPresets:
+      type: object
+      description: Pre-defined color schemes for common use cases
+      properties:
+        blue:
+          type: object
+          properties:
+            primary: 
+              type: string
+              example: "#3B82F6"
+            secondary:
+              type: string
+              example: "#EFF6FF"
+        purple:
+          type: object
+          properties:
+            primary:
+              type: string
+              example: "#8B5CF6"
+            secondary:
+              type: string
+              example: "#F5F3FF"
+        green:
+          type: object
+          properties:
+            primary:
+              type: string
+              example: "#10B981"
+            secondary:
+              type: string
+              example: "#ECFDF5"
+        orange:
+          type: object
+          properties:
+            primary:
+              type: string
+              example: "#F59E0B"
+            secondary:
+              type: string
+              example: "#FEF3C7"
+        red:
+          type: object
+          properties:
+            primary:
+              type: string
+              example: "#EF4444"
+            secondary:
+              type: string
+              example: "#FEE2E2"
+        teal:
+          type: object
+          properties:
+            primary:
+              type: string
+              example: "#14B8A6"
+            secondary:
+              type: string
+              example: "#F0FDFA"

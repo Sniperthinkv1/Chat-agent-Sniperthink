@@ -1,0 +1,2137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Channel AI Agent API Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: #2c3e50;
+            color: #ecf0f1;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #34495e;
+        }
+
+        .sidebar-header h1 {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-header p {
+            font-size: 12px;
+            color: #95a5a6;
+        }
+
+        .nav-section {
+            margin: 20px 0;
+        }
+
+        .nav-section-title {
+            padding: 10px 20px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #95a5a6;
+            font-weight: 600;
+        }
+
+        .nav-item {
+            padding: 8px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            background: #34495e;
+        }
+
+        .nav-item.active {
+            background: #3498db;
+            border-left: 3px solid #2980b9;
+        }
+
+        .nav-subitem {
+            padding: 6px 20px 6px 40px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #bdc3c7;
+        }
+
+        .nav-subitem:hover {
+            background: #34495e;
+            color: #ecf0f1;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 40px 60px;
+            max-width: 1200px;
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        h2 {
+            font-size: 28px;
+            margin: 40px 0 20px;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            font-size: 22px;
+            margin: 30px 0 15px;
+            color: #34495e;
+        }
+
+        h4 {
+            font-size: 18px;
+            margin: 20px 0 10px;
+            color: #34495e;
+        }
+
+        .endpoint {
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .http-method {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 12px;
+            margin-right: 15px;
+            text-transform: uppercase;
+        }
+
+        .method-get {
+            background: #27ae60;
+            color: white;
+        }
+
+        .method-post {
+            background: #3498db;
+            color: white;
+        }
+
+        .method-patch {
+            background: #f39c12;
+            color: white;
+        }
+
+        .method-delete {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .endpoint-path {
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .code-block pre {
+            margin: 0;
+        }
+
+        .parameter-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: white;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .parameter-table th {
+            background: #34495e;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .parameter-table td {
+            padding: 12px;
+            border-bottom: 1px solid #ecf0f1;
+            font-size: 14px;
+        }
+
+        .parameter-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-required {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .badge-optional {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .response-example {
+            margin: 20px 0;
+        }
+
+        .response-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .response-tab {
+            padding: 8px 16px;
+            background: #ecf0f1;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px 4px 0 0;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .response-tab.active {
+            background: #2c3e50;
+            color: white;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border-left: 4px solid #0c5460;
+            color: #0c5460;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border-left: 4px solid #856404;
+            color: #856404;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border-left: 4px solid #155724;
+            color: #155724;
+        }
+
+        .copy-button {
+            float: right;
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .copy-button:hover {
+            background: #2980b9;
+        }
+
+        .search-box {
+            padding: 10px 20px;
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #34495e;
+            border-radius: 4px;
+            background: #34495e;
+            color: #ecf0f1;
+            font-size: 14px;
+        }
+
+        .search-box input::placeholder {
+            color: #95a5a6;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #3498db;
+            color: white;
+            border-radius: 3px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h1>API Documentation</h1>
+                <p>Multi-Channel AI Agent</p>
+            </div>
+
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search endpoints...">
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Getting Started</div>
+                <div class="nav-item" onclick="showSection('introduction')">Introduction</div>
+                <div class="nav-item" onclick="showSection('authentication')">Authentication</div>
+                <div class="nav-item" onclick="showSection('quick-start')">Quick Start</div>
+                <div class="nav-item" onclick="showSection('rate-limits')">Rate Limits</div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Users & Credits</div>
+                <div class="nav-item" onclick="showSection('create-user')">Create User</div>
+                <div class="nav-item" onclick="showSection('get-credits')">Get Credits</div>
+                <div class="nav-item" onclick="showSection('add-credits')">Add Credits</div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Phone Numbers</div>
+                <div class="nav-item" onclick="showSection('list-phone-numbers')">List Phone Numbers</div>
+                <div class="nav-item" onclick="showSection('add-phone-number')">Add Phone Number</div>
+                <div class="nav-item" onclick="showSection('delete-phone-number')">Delete Phone Number</div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Agents</div>
+                <div class="nav-item" onclick="showSection('list-agents')">List Agents</div>
+                <div class="nav-item" onclick="showSection('create-agent')">Create Agent</div>
+                <div class="nav-item" onclick="showSection('get-agent')">Get Agent</div>
+                <div class="nav-item" onclick="showSection('update-agent')">Update Agent</div>
+                <div class="nav-item" onclick="showSection('delete-agent')">Delete Agent</div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Messages</div>
+                <div class="nav-item" onclick="showSection('get-messages')">Get Messages</div>
+                <div class="nav-item" onclick="showSection('filter-messages')">Filter Messages</div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Extractions</div>
+                <div class="nav-item" onclick="showSection('get-extractions')">Get Extractions</div>
+                <div class="nav-item" onclick="showSection('filter-extractions')">Filter Extractions</div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Webhooks</div>
+                <div class="nav-item" onclick="showSection('webhook-verification')">Webhook Verification</div>
+                <div class="nav-item" onclick="showSection('webhook-receive')">Receive Messages</div>
+                <div class="nav-item" onclick="showSection('webhook-whatsapp')">WhatsApp Payload</div>
+                <div class="nav-item" onclick="showSection('webhook-instagram')">Instagram Payload</div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Error Handling</div>
+                <div class="nav-item" onclick="showSection('error-codes')">Error Codes</div>
+                <div class="nav-item" onclick="showSection('error-responses')">Error Responses</div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Introduction Section -->
+            <section id="introduction" class="content-section active">
+                <h1>Multi-Channel AI Agent API</h1>
+                <p style="font-size: 18px; color: #7f8c8d; margin-bottom: 30px;">
+                    A scalable platform for deploying AI chatbots across WhatsApp, Instagram, and Web Chat
+                </p>
+
+                <div class="alert alert-info">
+                    <strong>Base URL:</strong> <code>https://api.example.com/v1</code>
+                </div>
+
+                <h2>Overview</h2>
+                <p>The Multi-Channel AI Agent API enables businesses to deploy AI-powered chatbots across multiple
+                    messaging platforms. The system processes high-volume messages (100+ messages/second), maintains
+                    conversation context, and extracts structured lead data.</p>
+
+                <h3>Key Features</h3>
+                <ul style="margin: 15px 0; padding-left: 20px;">
+                    <li>Multi-tenant architecture with user_id as tenant identifier</li>
+                    <li>High-throughput message processing with strict FIFO ordering</li>
+                    <li>Intelligent lead extraction from conversations using OpenAI</li>
+                    <li>Unified webhook endpoint for all Meta platforms</li>
+                    <li>Credit-based usage model with real-time balance tracking</li>
+                </ul>
+
+                <h3>Supported Platforms</h3>
+                <div style="display: flex; gap: 15px; margin: 20px 0;">
+                    <span class="tag">WhatsApp Business API</span>
+                    <span class="tag">Instagram Messaging API</span>
+                    <span class="tag">Web Chat Widget</span>
+                </div>
+            </section>
+
+            <!-- Authentication Section -->
+            <section id="authentication" class="content-section">
+                <h1>Authentication</h1>
+
+                <p>All API requests require authentication using an API key passed in the request header.</p>
+
+                <h2>API Key Authentication</h2>
+
+                <div class="endpoint">
+                    <h4>Header Format</h4>
+                    <div class="code-block">
+                        <pre>x-api-key: sk_live_your_api_key_here</pre>
+                    </div>
+                </div>
+
+                <h3>Getting Your API Key</h3>
+                <p>When you create a user account, an API key is automatically generated and returned in the response:
+                </p>
+
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre>{
+  "user_id": "usr_abc123",
+  "email": "john@example.com",
+  "name": "John Doe",
+  "api_key": "sk_live_abc123xyz789...",
+  "credits": 0,
+  "created_at": "2025-02-10T10:00:00Z"
+}</pre>
+                </div>
+
+                <div class="alert alert-warning">
+                    <strong>Security Warning:</strong> Keep your API key secure. Never expose it in client-side code or
+                    public repositories.
+                </div>
+
+                <h3>Example Request</h3>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre>curl -X GET https://api.example.com/v1/users/usr_abc123/agents \
+  -H "x-api-key: sk_live_your_api_key_here"</pre>
+                </div>
+            </section>
+
+            <!-- Quick Start Section -->
+            <section id="quick-start" class="content-section">
+                <h1>Quick Start Guide</h1>
+
+                <p>Get started with the Multi-Channel AI Agent API in 5 simple steps.</p>
+
+                <h2>Step 1: Create User Account</h2>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre>curl -X POST https://api.example.com/v1/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "your@email.com",
+    "name": "Your Name",
+    "company_name": "Your Company"
+  }'</pre>
+                </div>
+
+                <h2>Step 2: Add Phone Number</h2>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre>curl -X POST https://api.example.com/v1/users/YOUR_USER_ID/phone_numbers \
+  -H "x-api-key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "platform": "whatsapp",
+    "meta_phone_number_id": "836990829491415",
+    "access_token": "EAAxxxx...",
+    "display_name": "+1 (234) 567-8900"
+  }'</pre>
+                </div>
+
+                <h2>Step 3: Create AI Agent</h2>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre>curl -X POST https://api.example.com/v1/users/YOUR_USER_ID/agents \
+  -H "x-api-key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "phone_number_id": "pn_abc123",
+    "prompt_id": "prompt_xyz789",
+    "name": "Customer Support Agent"
+  }'</pre>
+                </div>
+
+                <h2>Step 4: Add Credits</h2>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre>curl -X POST https://api.example.com/v1/users/YOUR_USER_ID/credits \
+  -H "x-api-key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 1000}'</pre>
+                </div>
+
+                <h2>Step 5: Configure Webhook</h2>
+                <p>Set your webhook URL in Meta Business Suite to:</p>
+                <div class="code-block">
+                    <pre>https://your-domain.com/webhook/meta</pre>
+                </div>
+
+                <div class="alert alert-success">
+                    <strong>Success!</strong> Your AI agent is now ready to receive and respond to messages.
+                </div>
+            </section>
+
+            <!-- Rate Limits Section -->
+            <section id="rate-limits" class="content-section">
+                <h1>Rate Limits</h1>
+
+                <p>API requests are rate limited to ensure fair usage and system stability.</p>
+
+                <h2>Rate Limit Tiers</h2>
+                <table class="parameter-table">
+                    <thead>
+                        <tr>
+                            <th>Tier</th>
+                            <th>Requests per Minute</th>
+                            <th>Requests per Hour</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Standard</td>
+                            <td>100</td>
+                            <td>1,000</td>
+                        </tr>
+                        <tr>
+                            <td>Premium</td>
+                            <td>500</td>
+                            <td>10,000</td>
+                        </tr>
+                        <tr>
+                            <td>Enterprise</td>
+                            <td>Custom</td>
+                            <td>Custom</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2>Rate Limit Headers</h2>
+                <p>Every API response includes rate limit information in the headers:</p>
+                <div class="code-block">
+                    <pre>X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+X-RateLimit-Reset: 1612345678</pre>
+                </div>
+
+                <h2>Handling Rate Limits</h2>
+                <p>When you exceed the rate limit, you'll receive a 429 status code:</p>
+                <div class="code-block">
+                    <pre>{
+  "error": "Rate limit exceeded",
+  "message": "Too many requests. Please try again later.",
+  "retry_after": 60,
+  "correlation_id": "req_abc123",
+  "timestamp": "2025-02-10T10:00:00Z"
+}</pre>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>Best Practice:</strong> Implement exponential backoff when you receive rate limit errors.
+                </div>
+            </section>
+
+            <!-- Create User Section -->
+            <section id="create-user" class="content-section">
+                <h1>Create User</h1>
+                <p>Register a new user account in the system.</p>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-post">POST</span>
+                        <span class="endpoint-path">/users</span>
+                    </div>
+
+                    <h3>Request Body</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Type</th>
+                                <th>Required</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>email</code></td>
+                                <td>string</td>
+                                <td><span class="badge badge-required">Required</span></td>
+                                <td>User's email address</td>
+                            </tr>
+                            <tr>
+                                <td><code>name</code></td>
+                                <td>string</td>
+                                <td><span class="badge badge-required">Required</span></td>
+                                <td>User's full name</td>
+                            </tr>
+                            <tr>
+                                <td><code>company_name</code></td>
+                                <td>string</td>
+                                <td><span class="badge badge-optional">Optional</span></td>
+                                <td>Company or organization name</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Example Request</h3>
+                    <div class="code-block">
+                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        <pre>curl -X POST https://api.example.com/v1/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "john@example.com",
+    "name": "John Doe",
+    "company_name": "Acme Corp"
+  }'</pre>
+                    </div>
+
+                    <h3>Success Response (201 Created)</h3>
+                    <div class="code-block">
+                        <pre>{
+  "user_id": "usr_abc123",
+  "email": "john@example.com",
+  "name": "John Doe",
+  "company_name": "Acme Corp",
+  "credits": 0,
+  "api_key": "sk_live_abc123xyz789...",
+  "created_at": "2025-02-10T10:00:00Z",
+  "updated_at": "2025-02-10T10:00:00Z"
+}</pre>
+                    </div>
+
+                    <h3>Error Responses</h3>
+                    <h4>400 Bad Request</h4>
+                    <div class="code-block">
+                        <pre>{
+  "error": "Validation error",
+  "message": "email is required",
+  "correlation_id": "req_abc123",
+  "timestamp": "2025-02-10T10:00:00Z"
+}</pre>
+                    </div>
+
+                    <h4>409 Conflict</h4>
+                    <div class="code-block">
+                        <pre>{
+  "error": "Conflict",
+  "message": "User with email already exists",
+  "correlation_id": "req_abc123",
+  "timestamp": "2025-02-10T10:00:00Z"
+}</pre>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning">
+                    <strong>Important:</strong> Save the returned <code>api_key</code> securely. It cannot be retrieved
+                    later.
+                </div>
+            </section>
+
+            <!-- Get Credits Section -->
+            <section id="get-credits" class="content-section">
+                <h1>Get Credits</h1>
+                <p>Retrieve the current credit balance for a user.</p>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-get">GET</span>
+                        <span class="endpoint-path">/users/{user_id}/credits</span>
+                    </div>
+
+                    <h3>Path Parameters</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>user_id</code></td>
+                                <td>string</td>
+                                <td>User identifier</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Headers</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Header</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>x-api-key</code></td>
+                                <td>Your API key</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Example Request</h3>
+                    <div class="code-block">
+                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        <pre>curl -X GET https://api.example.com/v1/users/usr_abc123/credits \
+  -H "x-api-key: sk_live_your_api_key"</pre>
+                    </div>
+
+                    <h3>Success Response (200 OK)</h3>
+                    <div class="code-block">
+                        <pre>{
+  "user_id": "usr_abc123",
+  "remaining_credits": 1000,
+  "last_updated": "2025-02-10T10:00:00Z"
+}</pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Add Credits Section -->
+            <section id="add-credits" class="content-section">
+                <h1>Add Credits</h1>
+                <p>Add credits to a user's balance for message processing.</p>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-post">POST</span>
+                        <span class="endpoint-path">/users/{user_id}/credits</span>
+                    </div>
+
+                    <h3>Path Parameters</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>user_id</code></td>
+                                <td>string</td>
+                                <td>User identifier</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Request Body</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Type</th>
+                                <th>Required</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>amount</code></td>
+                                <td>integer</td>
+                                <td><span class="badge badge-required">Required</span></td>
+                                <td>Number of credits to add (minimum: 1)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Example Request</h3>
+                    <div class="code-block">
+                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        <pre>curl -X POST https://api.example.com/v1/users/usr_abc123/credits \
+  -H "x-api-key: sk_live_your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 1000}'</pre>
+                    </div>
+
+                    <h3>Success Response (200 OK)</h3>
+                    <div class="code-block">
+                        <pre>{
+  "user_id": "usr_abc123",
+  "remaining_credits": 1500,
+  "added_amount": 1000
+}</pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- List Phone Numbers Section -->
+            <section id="list-phone-numbers" class="content-section">
+                <h1>List Phone Numbers</h1>
+                <p>Retrieve all phone numbers and Instagram accounts for a user.</p>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-get">GET</span>
+                        <span class="endpoint-path">/users/{user_id}/phone_numbers</span>
+                    </div>
+
+                    <h3>Example Request</h3>
+                    <div class="code-block">
+                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        <pre>curl -X GET https://api.example.com/v1/users/usr_abc123/phone_numbers \
+  -H "x-api-key: sk_live_your_api_key"</pre>
+                    </div>
+
+                    <h3>Success Response (200 OK)</h3>
+                    <div class="code-block">
+                        <pre>{
+  "phone_numbers": [
+    {
+      "id": "pn_abc123",
+      "user_id": "usr_abc123",
+      "platform": "whatsapp",
+      "meta_phone_number_id": "836990829491415",
+      "display_name": "+1 (234) 567-8900",
+      "created_at": "2025-02-10T10:00:00Z",
+      "updated_at": "2025-02-10T10:00:00Z"
+    },
+    {
+      "id": "pn_def456",
+      "user_id": "usr_abc123",
+      "platform": "instagram",
+      "meta_phone_number_id": "17841234567890123",
+      "display_name": "@yourbusiness",
+      "created_at": "2025-02-10T11:00:00Z",
+      "updated_at": "2025-02-10T11:00:00Z"
+    }
+  ]
+}</pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Add Phone Number Section -->
+            <section id="add-phone-number" class="content-section">
+                <h1>Add Phone Number</h1>
+                <p>Add a WhatsApp Business phone number or Instagram account to your user account.</p>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-post">POST</span>
+                        <span class="endpoint-path">/users/{user_id}/phone_numbers</span>
+                    </div>
+
+                    <h3>Request Body</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Type</th>
+                                <th>Required</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>platform</code></td>
+                                <td>string</td>
+                                <td><span class="badge badge-required">Required</span></td>
+                                <td>Platform type: <code>whatsapp</code>, <code>instagram</code>, or
+                                    <code>webchat</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>meta_phone_number_id</code></td>
+                                <td>string</td>
+                                <td><span class="badge badge-required">Required</span></td>
+                                <td>Meta's phone_number_id (WABA ID) or Instagram Account ID</td>
+                            </tr>
+                            <tr>
+                                <td><code>access_token</code></td>
+                                <td>string</td>
+                                <td><span class="badge badge-required">Required</span></td>
+                                <td>Meta access token for this phone number/account</td>
+                            </tr>
+                            <tr>
+                                <td><code>display_name</code></td>
+                                <td>string</td>
+                                <td><span class="badge badge-optional">Optional</span></td>
+                                <td>Human-readable identifier (e.g., "+1 (234) 567-8900" or "@yourbusiness")</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Example Request (WhatsApp)</h3>
+                    <div class="code-block">
+                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        <pre>curl -X POST https://api.example.com/v1/users/usr_abc123/phone_numbers \
+  -H "x-api-key: sk_live_your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "platform": "whatsapp",
+    "meta_phone_number_id": "836990829491415",
+    "access_token": "EAAxxxx...",
+    "display_name": "+1 (234) 567-8900"
+  }'</pre>
+                    </div>
+
+                    <h3>Example Request (Instagram)</h3>
+                    <div class="code-block">
+                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        <pre>curl -X POST https://api.example.com/v1/users/usr_abc123/phone_numbers \
+  -H "x-api-key: sk_live_your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "platform": "instagram",
+    "meta_phone_number_id": "17841234567890123",
+    "access_token": "EAAxxxx...",
+    "display_name": "@yourbusiness"
+  }'</pre>
+                    </div>
+
+                    <h3>Success Response (201 Created)</h3>
+                    <div class="code-block">
+                        <pre>{
+  "id": "pn_abc123",
+  "user_id": "usr_abc123",
+  "platform": "whatsapp",
+  "meta_phone_number_id": "836990829491415",
+  "display_name": "+1 (234) 567-8900",
+  "created_at": "2025-02-10T10:00:00Z",
+  "updated_at": "2025-02-10T10:00:00Z"
+}</pre>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>Note:</strong> The <code>meta_phone_number_id</code> is Meta's identifier used in API calls,
+                    not the actual phone number or Instagram username.
+                </div>
+            </section>
+
+            <!-- Delete Phone Number Section -->
+            <section id="delete-phone-number" class="content-section">
+                <h1>Delete Phone Number</h1>
+                <p>Remove a phone number and archive associated conversations.</p>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-delete">DELETE</span>
+                        <span class="endpoint-path">/users/{user_id}/phone_numbers/{phone_number_id}</span>
+                    </div>
+
+                    <h3>Path Parameters</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>user_id</code></td>
+                                <td>string</td>
+                                <td>User identifier</td>
+                            </tr>
+                            <tr>
+                                <td><code>phone_number_id</code></td>
+                                <td>string</td>
+                                <td>Phone number identifier</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Example Request</h3>
+                    <div class="code-block">
+                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        <pre>curl -X DELETE https://api.example.com/v1/users/usr_abc123/phone_numbers/pn_abc123 \
+  -H "x-api-key: sk_live_your_api_key"</pre>
+                    </div>
+
+                    <h3>Success Response (204 No Content)</h3>
+                    <p>No response body. HTTP status code 204 indicates successful deletion.</p>
+                </div>
+
+                <div class="alert alert-warning">
+                    <strong>Warning:</strong> Deleting a phone number will also delete the associated agent and archive
+                    all conversations.
+                </div>
+            </section>
+
+            <!-- List Agents Section -->
+            <section id="list-agents" class="content-section">
+                <h1>List Agents</h1>
+                <p>Retrieve all AI agents for a user.</p>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-get">GET</span>
+                        <span class="endpoint-path">/users/{user_id}/agents</span>
+                    </div>
+
+                    <h3>Example Request</h3>
+                    <div class="code-block">
+                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        <pre>curl -X GET https://api.example.com/v1/users/usr_abc123/agents \
+  -H "x-api-key: sk_live_your_api_key"</pre>
+                    </div>
+
+                    <h3>Success Response (200 OK)</h3>
+                    <div class="code-block">
+                        <pre>{
+  "agents": [
+    {
+      "agent_id": "agt_xyz789",
+      "user_id": "usr_abc123",
+      "phone_number_id": "pn_abc123",
+      "prompt_id": "prompt_support_v1",
+      "name": "WhatsApp Support Bot",
+      "created_at": "2025-02-10T10:00:00Z",
+      "updated_at": "2025-02-10T10:00:00Z"
+    },
+    {
+      "agent_id": "agt_def456",
+      "user_id": "usr_abc123",
+      "phone_number_id": "pn_def456",
+      "prompt_id": "prompt_sales_v2",
+      "name": "Instagram Sales Assistant",
+      "created_at": "2025-02-10T11:00:00Z",
+      "updated_at": "2025-02-10T11:00:00Z"
+    }
+  ]
+}</pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Create Agent Section -->
+            <section id="create-agent" class="content-section">
+                <h1>Create Agent</h1>
+                <p>Create a new AI agent by linking an OpenAI prompt to a phone number or Instagram account.</p>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-post">POST</span>
+                        <span class="endpoint-path">/users/{user_id}/agents</span>
+                    </div>
+
+                    <h3>Request Body</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Type</th>
+                                <th>Required</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>phone_number_id</code></td>
+                                <td>string</td>
+                                <td><span class="badge badge-required">Required</span></td>
+                                <td>Phone number or Instagram account ID</td>
+                            </tr>
+                            <tr>
+                                <td><code>prompt_id</code></td>
+                                <td>string</td>
+                                <td><span class="badge badge-required">Required</span></td>
+                                <td>OpenAI prompt ID from dashboard</td>
+                            </tr>
+                            <tr>
+                                <td><code>name</code></td>
+                                <td>string</td>
+                                <td><span class="badge badge-required">Required</span></td>
+                                <td>Human-readable agent name</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Example Request</h3>
+                    <div class="code-block">
+                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        <pre>curl -X POST https://api.example.com/v1/users/usr_abc123/agents \
+  -H "x-api-key: sk_live_your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "phone_number_id": "pn_abc123",
+    "prompt_id": "prompt_xyz789",
+    "name": "Customer Support Agent"
+  }'</pre>
+                    </div>
+
+                    <h3>Success Response (201 Created)</h3>
+                    <div class="code-block">
+                        <pre>{
+  "agent_id": "agt_xyz789",
+  "user_id": "usr_abc123",
+  "phone_number_id": "pn_abc123",
+  "prompt_id": "prompt_xyz789",
+  "name": "Customer Support Agent",
+  "created_at": "2025-02-10T10:00:00Z",
+  "updated_at": "2025-02-10T10:00:00Z"
+}</pre>
+                    </div>
+
+                    <h3>Error Response (409 Conflict)</h3>
+                    <div class="code-block">
+                        <pre>{
+  "error": "Conflict",
+  "message": "Phone number already has an active agent",
+  "correlation_id": "req_abc123",
+  "timestamp": "2025-02-10T10:00:00Z"
+}</pre>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>Business Rule:</strong> Only one agent can be active per phone number at any time. Creating
+                    a new agent will archive existing conversations.
+                </div>
+            </section>
+
+            <!-- Get Agent Section -->
+            <section id="get-agent" class="content-section">
+                <h1>Get Agent</h1>
+                <p>Retrieve details of a specific agent.</p>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-get">GET</span>
+                        <span class="endpoint-path">/users/{user_id}/agents/{agent_id}</span>
+                    </div>
+
+                    <h3>Path Parameters</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>user_id</code></td>
+                                <td>string</td>
+                                <td>User identifier</td>
+                            </tr>
+                            <tr>
+                                <td><code>agent_id</code></td>
+                                <td>string</td>
+                                <td>Agent identifier</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Example Request</h3>
+                    <div class="code-block">
+                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        <pre>curl -X GET https://api.example.com/v1/users/usr_abc123/agents/agt_xyz789 \
+  -H "x-api-key: sk_live_your_api_key"</pre>
+                    </div>
+
+                    <h3>Success Response (200 OK)</h3>
+                    <div class="code-block">
+                        <pre>{
+  "agent_id": "agt_xyz789",
+  "user_id": "usr_abc123",
+  "phone_number_id": "pn_abc123",
+  "prompt_id": "prompt_xyz789",
+  "name": "Customer Support Agent",
+  "created_at": "2025-02-10T10:00:00Z",
+  "updated_at": "2025-02-10T10:00:00Z"
+}</pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Update Agent Section -->
+            <section id="update-agent" class="content-section">
+                <h1>Update Agent</h1>
+                <p>Update agent name or configuration.</p>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-patch">PATCH</span>
+                        <span class="endpoint-path">/users/{user_id}/agents/{agent_id}</span>
+                    </div>
+
+                    <h3>Request Body</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Type</th>
+                                <th>Required</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>name</code></td>
+                                <td>string</td>
+                                <td><span class="badge badge-required">Required</span></td>
+                                <td>New agent name</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Example Request</h3>
+                    <div class="code-block">
+                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        <pre>curl -X PATCH https://api.example.com/v1/users/usr_abc123/agents/agt_xyz789 \
+  -H "x-api-key: sk_live_your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Updated Support Agent"
+  }'</pre>
+                    </div>
+
+                    <h3>Success Response (200 OK)</h3>
+                    <div class="code-block">
+                        <pre>{
+  "agent_id": "agt_xyz789",
+  "user_id": "usr_abc123",
+  "phone_number_id": "pn_abc123",
+  "prompt_id": "prompt_xyz789",
+  "name": "Updated Support Agent",
+  "created_at": "2025-02-10T10:00:00Z",
+  "updated_at": "2025-02-10T12:00:00Z"
+}</pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Delete Agent Section -->
+            <section id="delete-agent" class="content-section">
+                <h1>Delete Agent</h1>
+                <p>Delete an agent and archive associated conversations.</p>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-delete">DELETE</span>
+                        <span class="endpoint-path">/users/{user_id}/agents/{agent_id}</span>
+                    </div>
+
+                    <h3>Example Request</h3>
+                    <div class="code-block">
+                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        <pre>curl -X DELETE https://api.example.com/v1/users/usr_abc123/agents/agt_xyz789 \
+  -H "x-api-key: sk_live_your_api_key"</pre>
+                    </div>
+
+                    <h3>Success Response (204 No Content)</h3>
+                    <p>No response body. HTTP status code 204 indicates successful deletion.</p>
+                </div>
+            </section>
+
+            <!-- Get Messages Section -->
+            <section id="get-messages" class="content-section">
+                <h1>Get Messages</h1>
+                <p>Retrieve message history with filtering and pagination.</p>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-get">GET</span>
+                        <span class="endpoint-path">/users/{user_id}/messages</span>
+                    </div>
+
+                    <h3>Query Parameters</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Type</th>
+                                <th>Required</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>phone_number_id</code></td>
+                                <td>string</td>
+                                <td><span class="badge badge-optional">Optional</span></td>
+                                <td>Filter by phone number</td>
+                            </tr>
+                            <tr>
+                                <td><code>agent_id</code></td>
+                                <td>string</td>
+                                <td><span class="badge badge-optional">Optional</span></td>
+                                <td>Filter by agent</td>
+                            </tr>
+                            <tr>
+                                <td><code>conversation_id</code></td>
+                                <td>string</td>
+                                <td><span class="badge badge-optional">Optional</span></td>
+                                <td>Filter by conversation</td>
+                            </tr>
+                            <tr>
+                                <td><code>limit</code></td>
+                                <td>integer</td>
+                                <td><span class="badge badge-optional">Optional</span></td>
+                                <td>Number of messages to return (default: 50, max: 100)</td>
+                            </tr>
+                            <tr>
+                                <td><code>offset</code></td>
+                                <td>integer</td>
+                                <td><span class="badge badge-optional">Optional</span></td>
+                                <td>Pagination offset (default: 0)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Example Request (All Messages)</h3>
+                    <div class="code-block">
+                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        <pre>curl -X GET "https://api.example.com/v1/users/usr_abc123/messages?limit=50" \
+  -H "x-api-key: sk_live_your_api_key"</pre>
+                    </div>
+
+                    <h3>Success Response (200 OK)</h3>
+                    <div class="code-block">
+                        <pre>{
+  "messages": [
+    {
+      "message_id": "msg_abc123",
+      "conversation_id": "conv_xyz789",
+      "sender": "user",
+      "text": "Hello, I need help with my order",
+      "timestamp": "2025-02-10T10:00:00Z",
+      "status": "sent",
+      "sequence_no": 1
+    },
+    {
+      "message_id": "msg_def456",
+      "conversation_id": "conv_xyz789",
+      "sender": "agent",
+      "text": "Hi! I'd be happy to help you with your order. Could you please provide your order number?",
+      "timestamp": "2025-02-10T10:00:05Z",
+      "status": "sent",
+      "sequence_no": 2
+    }
+  ],
+  "pagination": {
+    "limit": 50,
+    "offset": 0,
+    "total": 2
+  }
+}</pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Filter Messages Section -->
+            <section id="filter-messages" class="content-section">
+                <h1>Filter Messages</h1>
+                <p>Examples of filtering messages by different criteria.</p>
+
+                <h2>Filter by Agent</h2>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre>curl -X GET "https://api.example.com/v1/users/usr_abc123/messages?agent_id=agt_xyz789&limit=50" \
+  -H "x-api-key: sk_live_your_api_key"</pre>
+                </div>
+
+                <h2>Filter by Conversation</h2>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre>curl -X GET "https://api.example.com/v1/users/usr_abc123/messages?conversation_id=conv_xyz789" \
+  -H "x-api-key: sk_live_your_api_key"</pre>
+                </div>
+
+                <h2>Filter by Phone Number</h2>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre>curl -X GET "https://api.example.com/v1/users/usr_abc123/messages?phone_number_id=pn_abc123" \
+  -H "x-api-key: sk_live_your_api_key"</pre>
+                </div>
+
+                <h2>Pagination Example</h2>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre>curl -X GET "https://api.example.com/v1/users/usr_abc123/messages?limit=20&offset=40" \
+  -H "x-api-key: sk_live_your_api_key"</pre>
+                </div>
+            </section>
+
+            <!-- Get Extractions Section -->
+            <section id="get-extractions" class="content-section">
+                <h1>Get Extractions</h1>
+                <p>Retrieve lead extraction data with filtering.</p>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-get">GET</span>
+                        <span class="endpoint-path">/users/{user_id}/extractions</span>
+                    </div>
+
+                    <h3>Query Parameters</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Type</th>
+                                <th>Required</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>conversation_id</code></td>
+                                <td>string</td>
+                                <td><span class="badge badge-optional">Optional</span></td>
+                                <td>Filter by conversation</td>
+                            </tr>
+                            <tr>
+                                <td><code>agent_id</code></td>
+                                <td>string</td>
+                                <td><span class="badge badge-optional">Optional</span></td>
+                                <td>Filter by agent</td>
+                            </tr>
+                            <tr>
+                                <td><code>limit</code></td>
+                                <td>integer</td>
+                                <td><span class="badge badge-optional">Optional</span></td>
+                                <td>Number of extractions to return (default: 50)</td>
+                            </tr>
+                            <tr>
+                                <td><code>offset</code></td>
+                                <td>integer</td>
+                                <td><span class="badge badge-optional">Optional</span></td>
+                                <td>Pagination offset (default: 0)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Example Request</h3>
+                    <div class="code-block">
+                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        <pre>curl -X GET "https://api.example.com/v1/users/usr_abc123/extractions?limit=50" \
+  -H "x-api-key: sk_live_your_api_key"</pre>
+                    </div>
+
+                    <h3>Success Response (200 OK)</h3>
+                    <div class="code-block">
+                        <pre>{
+  "extractions": [
+    {
+      "extraction_id": "ext_abc123",
+      "conversation_id": "conv_xyz789",
+      "name": "John Doe",
+      "email": "john@example.com",
+      "company": "Acme Corp",
+      "intent": "Product demo request",
+      "urgency": 3,
+      "budget": 2,
+      "fit": 3,
+      "engagement": 3,
+      "demo_datetime": "2025-02-15T14:00:00Z",
+      "smart_notification": "High priority lead - interested in enterprise plan",
+      "extracted_at": "2025-02-10T10:30:00Z"
+    }
+  ],
+  "pagination": {
+    "limit": 50,
+    "offset": 0,
+    "total": 1
+  }
+}</pre>
+                    </div>
+                </div>
+
+                <h2>Extraction Fields</h2>
+                <table class="parameter-table">
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>name</code></td>
+                            <td>string</td>
+                            <td>Contact name</td>
+                        </tr>
+                        <tr>
+                            <td><code>email</code></td>
+                            <td>string</td>
+                            <td>Contact email</td>
+                        </tr>
+                        <tr>
+                            <td><code>company</code></td>
+                            <td>string</td>
+                            <td>Company name</td>
+                        </tr>
+                        <tr>
+                            <td><code>intent</code></td>
+                            <td>string</td>
+                            <td>Customer intent or interest</td>
+                        </tr>
+                        <tr>
+                            <td><code>urgency</code></td>
+                            <td>integer (1-3)</td>
+                            <td>Urgency level: 1=Low, 2=Medium, 3=High</td>
+                        </tr>
+                        <tr>
+                            <td><code>budget</code></td>
+                            <td>integer (1-3)</td>
+                            <td>Budget level: 1=Low, 2=Medium, 3=High</td>
+                        </tr>
+                        <tr>
+                            <td><code>fit</code></td>
+                            <td>integer (1-3)</td>
+                            <td>Product fit: 1=Poor, 2=Good, 3=Excellent</td>
+                        </tr>
+                        <tr>
+                            <td><code>engagement</code></td>
+                            <td>integer (1-3)</td>
+                            <td>Engagement level: 1=Low, 2=Medium, 3=High</td>
+                        </tr>
+                        <tr>
+                            <td><code>demo_datetime</code></td>
+                            <td>datetime</td>
+                            <td>Scheduled demo date/time</td>
+                        </tr>
+                        <tr>
+                            <td><code>smart_notification</code></td>
+                            <td>string</td>
+                            <td>AI-generated summary and recommendations</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Filter Extractions Section -->
+            <section id="filter-extractions" class="content-section">
+                <h1>Filter Extractions</h1>
+                <p>Examples of filtering extractions by different criteria.</p>
+
+                <h2>Filter by Agent</h2>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre>curl -X GET "https://api.example.com/v1/users/usr_abc123/extractions?agent_id=agt_xyz789" \
+  -H "x-api-key: sk_live_your_api_key"</pre>
+                </div>
+
+                <h2>Filter by Conversation</h2>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre>curl -X GET "https://api.example.com/v1/users/usr_abc123/extractions?conversation_id=conv_xyz789" \
+  -H "x-api-key: sk_live_your_api_key"</pre>
+                </div>
+            </section>
+
+            <!-- Webhook Verification Section -->
+            <section id="webhook-verification" class="content-section">
+                <h1>Webhook Verification</h1>
+                <p>Handle Meta webhook verification challenge.</p>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-get">GET</span>
+                        <span class="endpoint-path">/webhook/meta</span>
+                    </div>
+
+                    <h3>Query Parameters</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>hub.mode</code></td>
+                                <td>string</td>
+                                <td>Should be "subscribe"</td>
+                            </tr>
+                            <tr>
+                                <td><code>hub.verify_token</code></td>
+                                <td>string</td>
+                                <td>Your webhook verify token</td>
+                            </tr>
+                            <tr>
+                                <td><code>hub.challenge</code></td>
+                                <td>string</td>
+                                <td>Challenge string to echo back</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Example Request</h3>
+                    <div class="code-block">
+                        <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                        <pre>curl -X GET "https://your-domain.com/webhook/meta?hub.mode=subscribe&hub.verify_token=YOUR_TOKEN&hub.challenge=CHALLENGE_STRING"</pre>
+                    </div>
+
+                    <h3>Success Response (200 OK)</h3>
+                    <p>The endpoint should return the challenge string:</p>
+                    <div class="code-block">
+                        <pre>CHALLENGE_STRING</pre>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>Setup:</strong> Configure this webhook URL in your Meta Business Suite under WhatsApp
+                    Manager or Instagram Settings.
+                </div>
+            </section>
+
+            <!-- Webhook Receive Section -->
+            <section id="webhook-receive" class="content-section">
+                <h1>Receive Messages</h1>
+                <p>Handle incoming messages from WhatsApp and Instagram.</p>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-post">POST</span>
+                        <span class="endpoint-path">/webhook/meta</span>
+                    </div>
+
+                    <h3>Headers</h3>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Header</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>x-hub-signature-256</code></td>
+                                <td>SHA256 signature for payload verification</td>
+                            </tr>
+                            <tr>
+                                <td><code>Content-Type</code></td>
+                                <td>application/json</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Success Response (200 OK)</h3>
+                    <p>Return 200 status to acknowledge receipt:</p>
+                    <div class="code-block">
+                        <pre>{
+  "status": "received"
+}</pre>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning">
+                    <strong>Security:</strong> Always verify the webhook signature using your app secret before
+                    processing messages.
+                </div>
+            </section>
+
+            <!-- WhatsApp Webhook Payload Section -->
+            <section id="webhook-whatsapp" class="content-section">
+                <h1>WhatsApp Webhook Payload</h1>
+                <p>Structure of incoming WhatsApp messages.</p>
+
+                <h2>Text Message Payload</h2>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre>{
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "WHATSAPP_BUSINESS_ACCOUNT_ID",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "+1234567890",
+              "phone_number_id": "836990829491415"
+            },
+            "contacts": [
+              {
+                "profile": {
+                  "name": "John Doe"
+                },
+                "wa_id": "1234567890"
+              }
+            ],
+            "messages": [
+              {
+                "from": "1234567890",
+                "id": "wamid.ABC123",
+                "timestamp": "1612345678",
+                "type": "text",
+                "text": {
+                  "body": "Hello, I need help"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}</pre>
+                </div>
+
+                <h2>Message Status Update</h2>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre>{
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "WHATSAPP_BUSINESS_ACCOUNT_ID",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "+1234567890",
+              "phone_number_id": "836990829491415"
+            },
+            "statuses": [
+              {
+                "id": "wamid.ABC123",
+                "status": "delivered",
+                "timestamp": "1612345678",
+                "recipient_id": "1234567890"
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}</pre>
+                </div>
+
+                <h2>Message Types</h2>
+                <ul style="margin: 15px 0; padding-left: 20px;">
+                    <li><strong>text</strong> - Plain text messages</li>
+                    <li><strong>image</strong> - Image attachments</li>
+                    <li><strong>audio</strong> - Audio/voice messages</li>
+                    <li><strong>video</strong> - Video attachments</li>
+                    <li><strong>document</strong> - Document files</li>
+                    <li><strong>location</strong> - Location sharing</li>
+                    <li><strong>contacts</strong> - Contact cards</li>
+                </ul>
+            </section>
+
+            <!-- Instagram Webhook Payload Section -->
+            <section id="webhook-instagram" class="content-section">
+                <h1>Instagram Webhook Payload</h1>
+                <p>Structure of incoming Instagram messages.</p>
+
+                <h2>Text Message Payload</h2>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre>{
+  "object": "instagram",
+  "entry": [
+    {
+      "id": "INSTAGRAM_BUSINESS_ACCOUNT_ID",
+      "time": 1612345678,
+      "messaging": [
+        {
+          "sender": {
+            "id": "INSTAGRAM_USER_ID"
+          },
+          "recipient": {
+            "id": "INSTAGRAM_BUSINESS_ACCOUNT_ID"
+          },
+          "timestamp": 1612345678,
+          "message": {
+            "mid": "mid.ABC123",
+            "text": "Hello, I'm interested in your products"
+          }
+        }
+      ]
+    }
+  ]
+}</pre>
+                </div>
+
+                <h2>Message with Attachments</h2>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <pre>{
+  "object": "instagram",
+  "entry": [
+    {
+      "id": "INSTAGRAM_BUSINESS_ACCOUNT_ID",
+      "time": 1612345678,
+      "messaging": [
+        {
+          "sender": {
+            "id": "INSTAGRAM_USER_ID"
+          },
+          "recipient": {
+            "id": "INSTAGRAM_BUSINESS_ACCOUNT_ID"
+          },
+          "timestamp": 1612345678,
+          "message": {
+            "mid": "mid.ABC123",
+            "attachments": [
+              {
+                "type": "image",
+                "payload": {
+                  "url": "https://example.com/image.jpg"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}</pre>
+                </div>
+
+                <h2>Supported Message Types</h2>
+                <ul style="margin: 15px 0; padding-left: 20px;">
+                    <li><strong>text</strong> - Plain text messages</li>
+                    <li><strong>image</strong> - Image attachments</li>
+                    <li><strong>video</strong> - Video attachments</li>
+                    <li><strong>audio</strong> - Audio messages</li>
+                    <li><strong>file</strong> - File attachments</li>
+                </ul>
+            </section>
+
+            <!-- Error Codes Section -->
+            <section id="error-codes" class="content-section">
+                <h1>Error Codes</h1>
+                <p>HTTP status codes and their meanings.</p>
+
+                <h2>Success Codes</h2>
+                <table class="parameter-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Status</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>200</code></td>
+                            <td>OK</td>
+                            <td>Request successful</td>
+                        </tr>
+                        <tr>
+                            <td><code>201</code></td>
+                            <td>Created</td>
+                            <td>Resource created successfully</td>
+                        </tr>
+                        <tr>
+                            <td><code>204</code></td>
+                            <td>No Content</td>
+                            <td>Request successful, no response body</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2>Client Error Codes</h2>
+                <table class="parameter-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Status</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>400</code></td>
+                            <td>Bad Request</td>
+                            <td>Invalid request parameters or body</td>
+                        </tr>
+                        <tr>
+                            <td><code>401</code></td>
+                            <td>Unauthorized</td>
+                            <td>Invalid or missing API key</td>
+                        </tr>
+                        <tr>
+                            <td><code>403</code></td>
+                            <td>Forbidden</td>
+                            <td>Access denied to resource</td>
+                        </tr>
+                        <tr>
+                            <td><code>404</code></td>
+                            <td>Not Found</td>
+                            <td>Resource not found</td>
+                        </tr>
+                        <tr>
+                            <td><code>409</code></td>
+                            <td>Conflict</td>
+                            <td>Resource already exists or conflict</td>
+                        </tr>
+                        <tr>
+                            <td><code>429</code></td>
+                            <td>Too Many Requests</td>
+                            <td>Rate limit exceeded</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2>Server Error Codes</h2>
+                <table class="parameter-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Status</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>500</code></td>
+                            <td>Internal Server Error</td>
+                            <td>Unexpected server error</td>
+                        </tr>
+                        <tr>
+                            <td><code>502</code></td>
+                            <td>Bad Gateway</td>
+                            <td>Invalid response from upstream server</td>
+                        </tr>
+                        <tr>
+                            <td><code>503</code></td>
+                            <td>Service Unavailable</td>
+                            <td>Service temporarily unavailable</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Error Responses Section -->
+            <section id="error-responses" class="content-section">
+                <h1>Error Responses</h1>
+                <p>All errors follow a consistent JSON format.</p>
+
+                <h2>Error Response Structure</h2>
+                <div class="code-block">
+                    <pre>{
+  "error": "Error type",
+  "message": "Detailed error message",
+  "correlation_id": "req_abc123",
+  "timestamp": "2025-02-10T10:00:00Z"
+}</pre>
+                </div>
+
+                <h2>Common Error Examples</h2>
+
+                <h3>400 Bad Request</h3>
+                <div class="code-block">
+                    <pre>{
+  "error": "Validation error",
+  "message": "phone_number_id is required",
+  "correlation_id": "req_abc123",
+  "timestamp": "2025-02-10T10:00:00Z"
+}</pre>
+                </div>
+
+                <h3>401 Unauthorized</h3>
+                <div class="code-block">
+                    <pre>{
+  "error": "Unauthorized",
+  "message": "Invalid API key",
+  "correlation_id": "req_abc123",
+  "timestamp": "2025-02-10T10:00:00Z"
+}</pre>
+                </div>
+
+                <h3>404 Not Found</h3>
+                <div class="code-block">
+                    <pre>{
+  "error": "Not found",
+  "message": "Agent not found",
+  "correlation_id": "req_abc123",
+  "timestamp": "2025-02-10T10:00:00Z"
+}</pre>
+                </div>
+
+                <h3>409 Conflict</h3>
+                <div class="code-block">
+                    <pre>{
+  "error": "Conflict",
+  "message": "Phone number already has an active agent",
+  "correlation_id": "req_abc123",
+  "timestamp": "2025-02-10T10:00:00Z"
+}</pre>
+                </div>
+
+                <h3>429 Rate Limit Exceeded</h3>
+                <div class="code-block">
+                    <pre>{
+  "error": "Rate limit exceeded",
+  "message": "Too many requests. Please try again later.",
+  "retry_after": 60,
+  "correlation_id": "req_abc123",
+  "timestamp": "2025-02-10T10:00:00Z"
+}</pre>
+                </div>
+
+                <h3>500 Internal Server Error</h3>
+                <div class="code-block">
+                    <pre>{
+  "error": "Internal server error",
+  "message": "An unexpected error occurred",
+  "correlation_id": "req_abc123",
+  "timestamp": "2025-02-10T10:00:00Z"
+}</pre>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>Correlation ID:</strong> Always include the correlation_id when contacting support for
+                    faster issue resolution.
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+
+            // Update active nav item
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        function copyCode(button) {
+            const codeBlock = button.nextElementSibling;
+            const text = codeBlock.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                button.textContent = 'Copied!';
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                }, 2000);
+            });
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function (e) {
+            const searchTerm = e.target.value.toLowerCase();
+            document.querySelectorAll('.nav-item').forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

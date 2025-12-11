@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Channel AI Agent API - Swagger UI</title>
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.10.5/swagger-ui.css">
+    <style>
+        html {
+            box-sizing: border-box;
+            overflow: -moz-scrollbars-vertical;
+            overflow-y: scroll;
+        }
+
+        *,
+        *:before,
+        *:after {
+            box-sizing: inherit;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        /* Custom styling for Swagger UI */
+        .swagger-ui .topbar {
+            background-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .swagger-ui .topbar .download-url-wrapper {
+            display: none;
+        }
+
+        .swagger-ui .info .title {
+            color: #2c3e50;
+        }
+
+        .swagger-ui .opblock.opblock-get {
+            border-color: #27ae60;
+            background: rgba(39, 174, 96, 0.1);
+        }
+
+        .swagger-ui .opblock.opblock-get .opblock-summary-method {
+            background: #27ae60;
+        }
+
+        .swagger-ui .opblock.opblock-post {
+            border-color: #3498db;
+            background: rgba(52, 152, 219, 0.1);
+        }
+
+        .swagger-ui .opblock.opblock-post .opblock-summary-method {
+            background: #3498db;
+        }
+
+        .swagger-ui .opblock.opblock-patch {
+            border-color: #f39c12;
+            background: rgba(243, 156, 18, 0.1);
+        }
+
+        .swagger-ui .opblock.opblock-patch .opblock-summary-method {
+            background: #f39c12;
+        }
+
+        .swagger-ui .opblock.opblock-delete {
+            border-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+        }
+
+        .swagger-ui .opblock.opblock-delete .opblock-summary-method {
+            background: #e74c3c;
+        }
+
+        .swagger-ui .btn.authorize {
+            background-color: #667eea;
+            border-color: #667eea;
+        }
+
+        .swagger-ui .btn.authorize:hover {
+            background-color: #764ba2;
+            border-color: #764ba2;
+        }
+
+        /* Custom header */
+        .custom-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            text-align: center;
+        }
+
+        .custom-header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .custom-header p {
+            margin: 10px 0 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .custom-header a {
+            color: white;
+            text-decoration: underline;
+            opacity: 0.9;
+        }
+
+        .custom-header a:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Custom Header -->
+    <div class="custom-header">
+        <h1>🚀 Multi-Channel AI Agent API</h1>
+        <p>Interactive API Documentation | <a href="index.html">← Back to Documentation Home</a></p>
+    </div>
+
+    <!-- Swagger UI Container -->
+    <div id="swagger-ui"></div>
+
+    <!-- Swagger UI Bundle -->
+    <script src="https://unpkg.com/swagger-ui-dist@5.10.5/swagger-ui-bundle.js"></script>
+    <script src="https://unpkg.com/swagger-ui-dist@5.10.5/swagger-ui-standalone-preset.js"></script>
+    <script>
+        window.onload = function() {
+            // Determine the OpenAPI spec URL
+            const specUrl = window.location.origin + window.location.pathname.replace('swagger-ui.html', 'api/openapi.yaml');
+            
+            // Initialize Swagger UI
+            const ui = SwaggerUIBundle({
+                url: specUrl,
+                dom_id: '#swagger-ui',
+                deepLinking: true,
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIStandalonePreset
+                ],
+                plugins: [
+                    SwaggerUIBundle.plugins.DownloadUrl
+                ],
+                layout: "StandaloneLayout",
+                defaultModelsExpandDepth: 1,
+                defaultModelExpandDepth: 1,
+                docExpansion: "list",
+                filter: true,
+                showExtensions: true,
+                showCommonExtensions: true,
+                tryItOutEnabled: true,
+                requestSnippetsEnabled: true,
+                persistAuthorization: true,
+                displayRequestDuration: true,
+                syntaxHighlight: {
+                    activate: true,
+                    theme: "monokai"
+                },
+                // Custom configuration
+                validatorUrl: null, // Disable validator badge
+                supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch', 'options', 'head'],
+                // API key authentication
+                onComplete: function() {
+                    console.log('Swagger UI loaded successfully');
+                    console.log('Spec URL:', specUrl);
+                }
+            });
+
+            window.ui = ui;
+        };
+    </script>
+</body>
+</html>

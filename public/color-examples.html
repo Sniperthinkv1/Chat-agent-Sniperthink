@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Webchat Widget - Color Examples</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: white;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: rgba(255,255,255,0.9);
+      font-size: 1.2rem;
+      margin-bottom: 40px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+
+    .example-card {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      position: relative;
+    }
+
+    .example-card h2 {
+      margin: 0 0 20px 0;
+      color: #333;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .color-display {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .color-item {
+      flex: 1;
+    }
+
+    .color-swatch {
+      width: 100%;
+      height: 80px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .color-label {
+      font-size: 12px;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .color-value {
+      font-family: 'Courier New', monospace;
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .code-section {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 20px;
+      border-radius: 12px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      overflow-x: auto;
+      margin-top: 20px;
+      position: relative;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      background: #3B82F6;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .copy-btn:hover {
+      background: #2563EB;
+    }
+
+    .copy-btn.copied {
+      background: #10B981;
+    }
+
+    .use-case {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+
+    .use-case-title {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .use-case-text {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.5;
+    }
+
+    .cta {
+      text-align: center;
+      margin: 40px 0;
+    }
+
+    .cta-button {
+      display: inline-block;
+      padding: 16px 40px;
+      background: white;
+      color: #667eea;
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 18px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      transition: transform 0.2s;
+    }
+
+    .cta-button:hover {
+      transform: translateY(-2px);
+    }
+
+    .keyword {
+      color: #569cd6;
+    }
+
+    .string {
+      color: #ce9178;
+    }
+
+    .tag {
+      color: #4ec9b0;
+    }
+
+    .attr {
+      color: #9cdcfe;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 Webchat Widget Color Examples</h1>
+    <p class="subtitle">Real-world color schemes for different industries and brands</p>
+
+    <div class="grid">
+      <!-- Corporate Blue -->
+      <div class="example-card">
+        <h2>💼 Corporate Blue</h2>
+        <div class="color-display">
+          <div class="color-item">
+            <div class="color-swatch" style="background: #1E40AF;"></div>
+            <div class="color-label">Primary</div>
+            <div class="color-value">#1E40AF</div>
+          </div>
+          <div class="color-item">
+            <div class="color-swatch" style="background: #DBEAFE;"></div>
+            <div class="color-label">Secondary</div>
+            <div class="color-value">#DBEAFE</div>
+          </div>
+        </div>
+        <div class="use-case">
+          <div class="use-case-title">Best for:</div>
+          <div class="use-case-text">Banks, law firms, consulting, enterprise software</div>
+        </div>
+        <div class="code-section">
+          <button class="copy-btn" onclick="copyCode(this, 'corporate')">Copy</button>
+          <div id="corporate">
+<span class="tag">&lt;webchat-widget</span><br>
+&nbsp;&nbsp;<span class="attr">agent-id</span>=<span class="string">"your_id"</span><br>
+&nbsp;&nbsp;<span class="attr">primary-color</span>=<span class="string">"#1E40AF"</span><br>
+&nbsp;&nbsp;<span class="attr">secondary-color</span>=<span class="string">"#DBEAFE"</span><span class="tag">&gt;</span><br>
+<span class="tag">&lt;/webchat-widget&gt;</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tech Startup -->
+      <div class="example-card">
+        <h2>🚀 Tech Startup</h2>
+        <div class="color-display">
+          <div class="color-item">
+            <div class="color-swatch" style="background: #7C3AED;"></div>
+            <div class="color-label">Primary</div>
+            <div class="color-value">#7C3AED</div>
+          </div>
+          <div class="color-item">
+            <div class="color-swatch" style="background: #EDE9FE;"></div>
+            <div class="color-label">Secondary</div>
+            <div class="color-value">#EDE9FE</div>
+          </div>
+        </div>
+        <div class="use-case">
+          <div class="use-case-title">Best for:</div>
+          <div class="use-case-text">SaaS, tech startups, innovation-focused brands</div>
+        </div>
+        <div class="code-section">
+          <button class="copy-btn" onclick="copyCode(this, 'startup')">Copy</button>
+          <div id="startup">
+<span class="tag">&lt;webchat-widget</span><br>
+&nbsp;&nbsp;<span class="attr">agent-id</span>=<span class="string">"your_id"</span><br>
+&nbsp;&nbsp;<span class="attr">primary-color</span>=<span class="string">"#7C3AED"</span><br>
+&nbsp;&nbsp;<span class="attr">secondary-color</span>=<span class="string">"#EDE9FE"</span><span class="tag">&gt;</span><br>
+<span class="tag">&lt;/webchat-widget&gt;</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Eco Friendly -->
+      <div class="example-card">
+        <h2>🌱 Eco Friendly</h2>
+        <div class="color-display">
+          <div class="color-item">
+            <div class="color-swatch" style="background: #059669;"></div>
+            <div class="color-label">Primary</div>
+            <div class="color-value">#059669</div>
+          </div>
+          <div class="color-item">
+            <div class="color-swatch" style="background: #D1FAE5;"></div>
+            <div class="color-label">Secondary</div>
+            <div class="color-value">#D1FAE5</div>
+          </div>
+        </div>
+        <div class="use-case">
+          <div class="use-case-title">Best for:</div>
+          <div class="use-case-text">Sustainability, organic products, health & wellness</div>
+        </div>
+        <div class="code-section">
+          <button class="copy-btn" onclick="copyCode(this, 'eco')">Copy</button>
+          <div id="eco">
+<span class="tag">&lt;webchat-widget</span><br>
+&nbsp;&nbsp;<span class="attr">agent-id</span>=<span class="string">"your_id"</span><br>
+&nbsp;&nbsp;<span class="attr">primary-color</span>=<span class="string">"#059669"</span><br>
+&nbsp;&nbsp;<span class="attr">secondary-color</span>=<span class="string">"#D1FAE5"</span><span class="tag">&gt;</span><br>
+<span class="tag">&lt;/webchat-widget&gt;</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- E-commerce -->
+      <div class="example-card">
+        <h2>🛍️ E-commerce</h2>
+        <div class="color-display">
+          <div class="color-item">
+            <div class="color-swatch" style="background: #DC2626;"></div>
+            <div class="color-label">Primary</div>
+            <div class="color-value">#DC2626</div>
+          </div>
+          <div class="color-item">
+            <div class="color-swatch" style="background: #FEE2E2;"></div>
+            <div class="color-label">Secondary</div>
+            <div class="color-value">#FEE2E2</div>
+          </div>
+        </div>
+        <div class="use-case">
+          <div class="use-case-title">Best for:</div>
+          <div class="use-case-text">Online stores, retail, sales-focused businesses</div>
+        </div>
+        <div class="code-section">
+          <button class="copy-btn" onclick="copyCode(this, 'ecommerce')">Copy</button>
+          <div id="ecommerce">
+<span class="tag">&lt;webchat-widget</span><br>
+&nbsp;&nbsp;<span class="attr">agent-id</span>=<span class="string">"your_id"</span><br>
+&nbsp;&nbsp;<span class="attr">primary-color</span>=<span class="string">"#DC2626"</span><br>
+&nbsp;&nbsp;<span class="attr">secondary-color</span>=<span class="string">"#FEE2E2"</span><span class="tag">&gt;</span><br>
+<span class="tag">&lt;/webchat-widget&gt;</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Creative Agency -->
+      <div class="example-card">
+        <h2>🎨 Creative Agency</h2>
+        <div class="color-display">
+          <div class="color-item">
+            <div class="color-swatch" style="background: #EC4899;"></div>
+            <div class="color-label">Primary</div>
+            <div class="color-value">#EC4899</div>
+          </div>
+          <div class="color-item">
+            <div class="color-swatch" style="background: #FCE7F3;"></div>
+            <div class="color-label">Secondary</div>
+            <div class="color-value">#FCE7F3</div>
+          </div>
+        </div>
+        <div class="use-case">
+          <div class="use-case-title">Best for:</div>
+          <div class="use-case-text">Design agencies, creative studios, fashion brands</div>
+        </div>
+        <div class="code-section">
+          <button class="copy-btn" onclick="copyCode(this, 'creative')">Copy</button>
+          <div id="creative">
+<span class="tag">&lt;webchat-widget</span><br>
+&nbsp;&nbsp;<span class="attr">agent-id</span>=<span class="string">"your_id"</span><br>
+&nbsp;&nbsp;<span class="attr">primary-color</span>=<span class="string">"#EC4899"</span><br>
+&nbsp;&nbsp;<span class="attr">secondary-color</span>=<span class="string">"#FCE7F3"</span><span class="tag">&gt;</span><br>
+<span class="tag">&lt;/webchat-widget&gt;</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Financial Services -->
+      <div class="example-card">
+        <h2>💰 Financial Services</h2>
+        <div class="color-display">
+          <div class="color-item">
+            <div class="color-swatch" style="background: #0891B2;"></div>
+            <div class="color-label">Primary</div>
+            <div class="color-value">#0891B2</div>
+          </div>
+          <div class="color-item">
+            <div class="color-swatch" style="background: #CFFAFE;"></div>
+            <div class="color-label">Secondary</div>
+            <div class="color-value">#CFFAFE</div>
+          </div>
+        </div>
+        <div class="use-case">
+          <div class="use-case-title">Best for:</div>
+          <div class="use-case-text">Fintech, banking, investment platforms</div>
+        </div>
+        <div class="code-section">
+          <button class="copy-btn" onclick="copyCode(this, 'financial')">Copy</button>
+          <div id="financial">
+<span class="tag">&lt;webchat-widget</span><br>
+&nbsp;&nbsp;<span class="attr">agent-id</span>=<span class="string">"your_id"</span><br>
+&nbsp;&nbsp;<span class="attr">primary-color</span>=<span class="string">"#0891B2"</span><br>
+&nbsp;&nbsp;<span class="attr">secondary-color</span>=<span class="string">"#CFFAFE"</span><span class="tag">&gt;</span><br>
+<span class="tag">&lt;/webchat-widget&gt;</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta">
+      <a href="/widget-config.html?agent_id=demo" class="cta-button">
+        🎨 Create Your Own Custom Colors
+      </a>
+    </div>
+  </div>
+
+  <script>
+    function copyCode(button, id) {
+      const codeElement = document.getElementById(id);
+      const text = codeElement.textContent.trim();
+      
+      // Create proper HTML
+      const html = `<webchat-widget
+  agent-id="your_id"
+  primary-color="${text.match(/primary-color="([^"]+)"/)[1]}"
+  secondary-color="${text.match(/secondary-color="([^"]+)"/)[1]}">
+</webchat-widget>
+<script src="https://yourapi.com/widget.js" async><\/script>`;
+      
+      navigator.clipboard.writeText(html).then(() => {
+        button.textContent = 'Copied!';
+        button.classList.add('copied');
+        setTimeout(() => {
+          button.textContent = 'Copy';
+          button.classList.remove('copied');
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy:', err);
+        alert('Failed to copy to clipboard');
+      });
+    }
+  </script>
+</body>
+</html>

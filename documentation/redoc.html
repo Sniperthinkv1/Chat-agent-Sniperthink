@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Channel AI Agent API - ReDoc</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        /* Custom header */
+        .custom-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            text-align: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .custom-header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .custom-header p {
+            margin: 8px 0 0 0;
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .custom-header a {
+            color: white;
+            text-decoration: underline;
+            opacity: 0.9;
+            margin: 0 10px;
+        }
+
+        .custom-header a:hover {
+            opacity: 1;
+        }
+
+        /* Adjust ReDoc container for fixed header */
+        #redoc-container {
+            margin-top: 100px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Custom Header -->
+    <div class="custom-header">
+        <h1>🚀 Multi-Channel AI Agent API</h1>
+        <p>
+            Beautiful API Documentation | 
+            <a href="index.html">← Documentation Home</a> | 
+            <a href="swagger-ui.html">Try Swagger UI</a>
+        </p>
+    </div>
+
+    <!-- ReDoc Container -->
+    <div id="redoc-container"></div>
+
+    <!-- ReDoc Script -->
+    <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
+    <script>
+        // Determine the OpenAPI spec URL
+        const specUrl = window.location.origin + window.location.pathname.replace('redoc.html', 'api/openapi.yaml');
+        
+        // Initialize ReDoc
+        Redoc.init(
+            specUrl,
+            {
+                scrollYOffset: 100, // Account for fixed header
+                hideDownloadButton: false,
+                disableSearch: false,
+                expandResponses: "200,201",
+                jsonSampleExpandLevel: 2,
+                hideSingleRequestSampleTab: true,
+                menuToggle: true,
+                nativeScrollbars: false,
+                pathInMiddlePanel: false,
+                requiredPropsFirst: true,
+                sortPropsAlphabetically: false,
+                theme: {
+                    colors: {
+                        primary: {
+                            main: '#667eea'
+                        },
+                        success: {
+                            main: '#27ae60'
+                        },
+                        warning: {
+                            main: '#f39c12'
+                        },
+                        error: {
+                            main: '#e74c3c'
+                        },
+                        text: {
+                            primary: '#2c3e50'
+                        }
+                    },
+                    typography: {
+                        fontSize: '14px',
+                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif',
+                        headings: {
+                            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif',
+                            fontWeight: '700'
+                        },
+                        code: {
+                            fontSize: '13px',
+                            fontFamily: '"Courier New", monospace'
+                        }
+                    },
+                    sidebar: {
+                        backgroundColor: '#fafafa',
+                        textColor: '#2c3e50'
+                    },
+                    rightPanel: {
+                        backgroundColor: '#2c3e50'
+                    }
+                }
+            },
+            document.getElementById('redoc-container')
+        );
+
+        console.log('ReDoc loaded successfully');
+        console.log('Spec URL:', specUrl);
+    </script>
+</body>
+</html>

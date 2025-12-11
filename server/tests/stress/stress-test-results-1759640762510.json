@@ -1,0 +1,505 @@
+{
+  "config": {
+    "BASE_URL": "http://127.0.0.1:3000",
+    "USER_ID": "user_test_webchat",
+    "PROMPT_ID": "pmpt_68de2bd80fa08196ab95184e7787c6e30c231f4a29f082a0",
+    "NUM_AGENTS": 10,
+    "SESSIONS_PER_SECOND": 100,
+    "TEST_DURATION_SECONDS": 2,
+    "SUCCESS_THRESHOLD_MS": 30000,
+    "MESSAGE_TEXT": "Burst test message"
+  },
+  "timestamp": "2025-10-05T05:06:02.510Z",
+  "summary": {
+    "totalSessions": 127,
+    "successfulSessions": 50,
+    "failedSessions": 77,
+    "successRate": "39.37%",
+    "testDuration": "52.77s",
+    "actualThroughput": "2.41 sessions/sec"
+  },
+  "responseTimes": {
+    "average": "5722.56ms",
+    "min": "3932ms",
+    "max": "10082ms",
+    "p50": "5592ms",
+    "p95": "7231ms",
+    "p99": "10082ms"
+  },
+  "errors": [
+    {
+      "sessionId": "14e81a4d-b123-4148-a43f-b32e975e4793",
+      "webchatId": "webchat_user_test_webchat_7hp08cq49",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47590
+    },
+    {
+      "sessionId": "7742ec4c-17e2-4f10-955e-940deb27c38f",
+      "webchatId": "webchat_user_test_webchat_h04tko2w7",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47126
+    },
+    {
+      "sessionId": "521a0f67-fbe7-4a21-b900-08da03ee9f75",
+      "webchatId": "webchat_user_test_webchat_39nebp3x1",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47576
+    },
+    {
+      "sessionId": "71370959-c771-4acc-a34a-db3640d382a8",
+      "webchatId": "webchat_user_test_webchat_sw1lrdytt",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47722
+    },
+    {
+      "sessionId": "d6e8c49a-a448-4bd2-a8aa-50c0882c22f0",
+      "webchatId": "webchat_user_test_webchat_39nebp3x1",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47252
+    },
+    {
+      "sessionId": "d87f65c2-f765-421e-90bd-d14a14bd84df",
+      "webchatId": "webchat_user_test_webchat_b9oosum5e",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47241
+    },
+    {
+      "sessionId": "fa624d4d-63af-4c02-aafc-d42b58c290b8",
+      "webchatId": "webchat_user_test_webchat_xf54fd5m1",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47245
+    },
+    {
+      "sessionId": "a9f73902-74fe-4c0e-bf00-327484b9d5a9",
+      "webchatId": "webchat_user_test_webchat_39nebp3x1",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 46863
+    },
+    {
+      "sessionId": "136e994b-d2e2-4243-ad33-70f0b8891acf",
+      "webchatId": "webchat_user_test_webchat_7hp08cq49",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47161
+    },
+    {
+      "sessionId": "1a60c549-9938-48ff-9b9f-36fc47d39a61",
+      "webchatId": "webchat_user_test_webchat_xf54fd5m1",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47889
+    },
+    {
+      "sessionId": "0a28ffd8-51fd-47bb-ba0d-379460db3a53",
+      "webchatId": "webchat_user_test_webchat_39nebp3x1",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47452
+    },
+    {
+      "sessionId": "4cf6be22-59d2-47e8-8cf8-c0ba80e316b4",
+      "webchatId": "webchat_user_test_webchat_yfnx1nejc",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47545
+    },
+    {
+      "sessionId": "68b400b3-ea8b-45f5-8fe2-184f763ffe8e",
+      "webchatId": "webchat_user_test_webchat_tryg8m36t",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 48070
+    },
+    {
+      "sessionId": "dbd6662f-4fc3-42b9-a8e4-9421de7cd1e0",
+      "webchatId": "webchat_user_test_webchat_tryg8m36t",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47615
+    },
+    {
+      "sessionId": "8611e800-5cf9-47b3-9a6f-ed44ee715f2d",
+      "webchatId": "webchat_user_test_webchat_xf54fd5m1",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47646
+    },
+    {
+      "sessionId": "2ada7beb-c0b8-4bb4-858f-b444ec088797",
+      "webchatId": "webchat_user_test_webchat_7hp08cq49",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47074
+    },
+    {
+      "sessionId": "379145dc-0bae-4c62-b977-256b00a0387c",
+      "webchatId": "webchat_user_test_webchat_tryg8m36t",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 48284
+    },
+    {
+      "sessionId": "98e3769f-537c-4ed3-ad2a-fbea35b94a74",
+      "webchatId": "webchat_user_test_webchat_sw1lrdytt",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 48496
+    },
+    {
+      "sessionId": "7d97a2a7-d253-4ed9-9e73-dd88504fcb0e",
+      "webchatId": "webchat_user_test_webchat_xf54fd5m1",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47695
+    },
+    {
+      "sessionId": "b4dfe324-6e63-495e-9dc3-3af14a25305c",
+      "webchatId": "webchat_user_test_webchat_im6iono9z",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47745
+    },
+    {
+      "sessionId": "ea2763e9-b6b5-42ef-a60c-680d00118a70",
+      "webchatId": "webchat_user_test_webchat_7hp08cq49",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47107
+    },
+    {
+      "sessionId": "d2d0a456-655a-4c43-ad25-e3b3eeb3b7d5",
+      "webchatId": "webchat_user_test_webchat_39nebp3x1",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47500
+    },
+    {
+      "sessionId": "4ca22c3b-b2db-4f2d-8798-a9f6d6617fea",
+      "webchatId": "webchat_user_test_webchat_b9oosum5e",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47650
+    },
+    {
+      "sessionId": "0a4b34ce-a366-43f9-ab29-bdfad316967d",
+      "webchatId": "webchat_user_test_webchat_h04tko2w7",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47495
+    },
+    {
+      "sessionId": "12d75ccb-d9f1-471c-bf24-cb8e95cba093",
+      "webchatId": "webchat_user_test_webchat_sw1lrdytt",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 48464
+    },
+    {
+      "sessionId": "0953b2cd-840c-4817-8ef8-edade0b64db0",
+      "webchatId": "webchat_user_test_webchat_bwnne9q2b",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47512
+    },
+    {
+      "sessionId": "a9f4c00b-87e4-4efc-81ba-7b45669b57ab",
+      "webchatId": "webchat_user_test_webchat_im6iono9z",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47220
+    },
+    {
+      "sessionId": "9d1f42da-4b39-4c18-83cc-36defd14bcd2",
+      "webchatId": "webchat_user_test_webchat_39nebp3x1",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 48452
+    },
+    {
+      "sessionId": "d1c531e3-de26-4504-aa42-ea7f9d98c357",
+      "webchatId": "webchat_user_test_webchat_xf54fd5m1",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 48355
+    },
+    {
+      "sessionId": "08b04f2f-562f-48fc-9c62-f7952c5baad1",
+      "webchatId": "webchat_user_test_webchat_tryg8m36t",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47742
+    },
+    {
+      "sessionId": "cf9a8b52-9fc4-4e13-9779-cff4caff3984",
+      "webchatId": "webchat_user_test_webchat_im6iono9z",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47307
+    },
+    {
+      "sessionId": "20beb618-04d7-4702-95db-ec0af8b67afb",
+      "webchatId": "webchat_user_test_webchat_39nebp3x1",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47328
+    },
+    {
+      "sessionId": "0db7a26e-3051-47f4-bc79-05961d38250f",
+      "webchatId": "webchat_user_test_webchat_yfnx1nejc",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47434
+    },
+    {
+      "sessionId": "ec9cd7d4-b1c8-4516-a8c5-a6126cc4cf45",
+      "webchatId": "webchat_user_test_webchat_h04tko2w7",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47769
+    },
+    {
+      "sessionId": "b310a91b-c114-409d-9908-2673a118a4f9",
+      "webchatId": "webchat_user_test_webchat_im6iono9z",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47727
+    },
+    {
+      "sessionId": "dd83b4eb-8eb4-4183-a8c5-d148c8cd5345",
+      "webchatId": "webchat_user_test_webchat_xf54fd5m1",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47469
+    },
+    {
+      "sessionId": "066c3728-4786-4077-abc2-9e4106a0da7d",
+      "webchatId": "webchat_user_test_webchat_b9oosum5e",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47748
+    },
+    {
+      "sessionId": "87b7e40a-df32-48dd-888f-dde0357e6a90",
+      "webchatId": "webchat_user_test_webchat_xf54fd5m1",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47673
+    },
+    {
+      "sessionId": "e7228e79-d616-48c8-8580-7921d605f478",
+      "webchatId": "webchat_user_test_webchat_tryg8m36t",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47869
+    },
+    {
+      "sessionId": "59e2c4db-9da7-44ae-a99d-056ef1eebc40",
+      "webchatId": "webchat_user_test_webchat_xf54fd5m1",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47566
+    },
+    {
+      "sessionId": "1c3c4232-49e5-4bd2-8d0f-2a2dec1bc16f",
+      "webchatId": "webchat_user_test_webchat_39nebp3x1",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47953
+    },
+    {
+      "sessionId": "ac2b805b-fb8a-41b2-924c-7056bfc6dd8b",
+      "webchatId": "webchat_user_test_webchat_7hp08cq49",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47579
+    },
+    {
+      "sessionId": "ea1e5e3c-4324-4781-942a-a4c9667d7127",
+      "webchatId": "webchat_user_test_webchat_b9oosum5e",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 47719
+    },
+    {
+      "sessionId": "3b157665-1fe3-4cfb-ad40-d7af1b984180",
+      "webchatId": "webchat_user_test_webchat_bwnne9q2b",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 48903
+    },
+    {
+      "sessionId": "120087eb-7154-4e38-a6ab-4ff0fea55ad5",
+      "webchatId": "webchat_user_test_webchat_39nebp3x1",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 49112
+    },
+    {
+      "sessionId": "8ddc16f2-e65a-4dae-b5f8-05bc516815da",
+      "webchatId": "webchat_user_test_webchat_xf54fd5m1",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 49784
+    },
+    {
+      "sessionId": "6155210d-db13-4cf7-a477-11567c7f3837",
+      "webchatId": "webchat_user_test_webchat_h04tko2w7",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 49160
+    },
+    {
+      "sessionId": "b54caeff-aaf7-46a6-bb68-6e7f0ea1f449",
+      "webchatId": "webchat_user_test_webchat_tryg8m36t",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 49117
+    },
+    {
+      "sessionId": "f67d656a-cc61-4a24-b711-5e3d9a250e51",
+      "webchatId": "webchat_user_test_webchat_bwnne9q2b",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 49317
+    },
+    {
+      "sessionId": "9f47b98c-f9f2-46d3-9e26-49ab1723ecaa",
+      "webchatId": "webchat_user_test_webchat_h04tko2w7",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 49073
+    },
+    {
+      "sessionId": "7c546d46-b77e-4180-a3a0-d6d9d825bf1d",
+      "webchatId": "webchat_user_test_webchat_im6iono9z",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 50127
+    },
+    {
+      "sessionId": "a3f7ad9e-b968-4da2-b039-2ff5222c0415",
+      "webchatId": "webchat_user_test_webchat_7hp08cq49",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 49435
+    },
+    {
+      "sessionId": "32646254-0a55-4aa4-b05b-e05721cd95a4",
+      "webchatId": "webchat_user_test_webchat_h04tko2w7",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 49569
+    },
+    {
+      "sessionId": "043dc2c8-7564-45a2-a2ce-0e1fd0763ca9",
+      "webchatId": "webchat_user_test_webchat_xf54fd5m1",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 49970
+    },
+    {
+      "sessionId": "4b7bcacf-7eca-4830-8124-625c52ecf4e6",
+      "webchatId": "webchat_user_test_webchat_yfnx1nejc",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 49304
+    },
+    {
+      "sessionId": "05fa3946-d622-4837-aaaa-198d75cb5e69",
+      "webchatId": "webchat_user_test_webchat_sw1lrdytt",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 49993
+    },
+    {
+      "sessionId": "e64af96b-a3a3-45f0-9576-ac61c2361bfc",
+      "webchatId": "webchat_user_test_webchat_sw1lrdytt",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 49226
+    },
+    {
+      "sessionId": "f45238aa-e68b-4f43-bddb-6a904e8fd048",
+      "webchatId": "webchat_user_test_webchat_bwnne9q2b",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 49185
+    },
+    {
+      "sessionId": "ca46c6db-50ff-41d4-8f21-7ec4666e6e9a",
+      "webchatId": "webchat_user_test_webchat_xf54fd5m1",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 49403
+    },
+    {
+      "sessionId": "aadbdbc4-6561-48a6-8cfd-b43542bba1e0",
+      "webchatId": "webchat_user_test_webchat_b9oosum5e",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 49224
+    },
+    {
+      "sessionId": "21483529-f6dd-4f3c-ad01-0763452d4f48",
+      "webchatId": "webchat_user_test_webchat_im6iono9z",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 49101
+    },
+    {
+      "sessionId": "ece6a324-4440-4ca2-9951-effe38510137",
+      "webchatId": "webchat_user_test_webchat_sw1lrdytt",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 49275
+    },
+    {
+      "sessionId": "d80cd2b2-00c2-4670-ac15-0dd677dd9088",
+      "webchatId": "webchat_user_test_webchat_sw1lrdytt",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 50244
+    },
+    {
+      "sessionId": "0735263b-2036-49c6-b19d-160b3262464e",
+      "webchatId": "webchat_user_test_webchat_tryg8m36t",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 49518
+    },
+    {
+      "sessionId": "e562197f-1b7d-48ca-915e-37f6a855631e",
+      "webchatId": "webchat_user_test_webchat_sw1lrdytt",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 49449
+    },
+    {
+      "sessionId": "eba1cf2c-aead-4976-b5c0-5e1b8d0b9c50",
+      "webchatId": "webchat_user_test_webchat_yfnx1nejc",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 49382
+    },
+    {
+      "sessionId": "f708e42b-d54d-437b-84df-15355c7e4bdc",
+      "webchatId": "webchat_user_test_webchat_im6iono9z",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 50292
+    },
+    {
+      "sessionId": "59e7ba2e-5405-4b43-b843-1187155cb440",
+      "webchatId": "webchat_user_test_webchat_sw1lrdytt",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 49388
+    },
+    {
+      "sessionId": "5ef36fb2-377f-4044-b04a-f06acb5ee47e",
+      "webchatId": "webchat_user_test_webchat_bwnne9q2b",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 49417
+    },
+    {
+      "sessionId": "07232be7-fea4-43a8-a40b-86ec6e6e931b",
+      "webchatId": "webchat_user_test_webchat_xf54fd5m1",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 49731
+    },
+    {
+      "sessionId": "262ec6da-2b47-48ea-9cb6-c0db1bc1ed02",
+      "webchatId": "webchat_user_test_webchat_xf54fd5m1",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 49648
+    },
+    {
+      "sessionId": "6cafc4f9-1f91-413e-8f09-d8294b3f1b7a",
+      "webchatId": "webchat_user_test_webchat_h04tko2w7",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 49752
+    },
+    {
+      "sessionId": "db1944fb-8767-47a6-aa5e-93feddea9fc0",
+      "webchatId": "webchat_user_test_webchat_7hp08cq49",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 50840
+    },
+    {
+      "sessionId": "f1627f2c-bb8f-43b8-aeec-659c5cfe9d54",
+      "webchatId": "webchat_user_test_webchat_7hp08cq49",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 51660
+    },
+    {
+      "sessionId": "f3469c40-5dec-4650-9030-dacf1a631e95",
+      "webchatId": "webchat_user_test_webchat_yfnx1nejc",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 51158
+    },
+    {
+      "sessionId": "fcf900e6-8a6e-42be-9713-51c4ebe11b0f",
+      "webchatId": "webchat_user_test_webchat_39nebp3x1",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 51053
+    },
+    {
+      "sessionId": "3f51f869-698e-426e-b947-4ad17757dbce",
+      "webchatId": "webchat_user_test_webchat_im6iono9z",
+      "error": "Timeout waiting for AI response",
+      "responseTime": 51078
+    }
+  ],
+  "agentIds": [
+    "webchat_user_test_webchat_im6iono9z",
+    "webchat_user_test_webchat_h04tko2w7",
+    "webchat_user_test_webchat_bwnne9q2b",
+    "webchat_user_test_webchat_tryg8m36t",
+    "webchat_user_test_webchat_xf54fd5m1",
+    "webchat_user_test_webchat_sw1lrdytt",
+    "webchat_user_test_webchat_yfnx1nejc",
+    "webchat_user_test_webchat_7hp08cq49",
+    "webchat_user_test_webchat_39nebp3x1",
+    "webchat_user_test_webchat_b9oosum5e"
+  ]
+}

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Webchat Widget - Color Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 40px;
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+
+    .demo-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .demo-card h3 {
+      margin: 0 0 10px 0;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .color-preview {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .color-box {
+      width: 50px;
+      height: 50px;
+      border-radius: 8px;
+      border: 2px solid #e0e0e0;
+    }
+
+    .color-info {
+      flex: 1;
+    }
+
+    .color-label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    .color-value {
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      color: #333;
+      font-weight: 600;
+    }
+
+    .widget-container {
+      position: relative;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f9f9f9;
+      border-radius: 8px;
+      border: 2px dashed #ddd;
+    }
+
+    .widget-note {
+      font-size: 12px;
+      color: #666;
+      text-align: center;
+    }
+
+    .instructions {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+
+    .instructions h2 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    .instructions ol {
+      line-height: 1.8;
+      color: #666;
+    }
+
+    .instructions code {
+      background: #f0f0f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+    }
+
+    .cta-button {
+      display: block;
+      width: 100%;
+      max-width: 400px;
+      margin: 30px auto;
+      padding: 16px 32px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 16px;
+      transition: transform 0.2s;
+    }
+
+    .cta-button:hover {
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body>
+  <h1>🎨 Webchat Widget Color Customization</h1>
+  <p class="subtitle">Test different color schemes for your AI chatbot</p>
+
+  <div class="instructions">
+    <h2>📋 How to Use</h2>
+    <ol>
+      <li>Each widget below demonstrates a different color scheme</li>
+      <li>Click any chat button to test the widget with that color scheme</li>
+      <li>Copy the color codes to use in your own embed</li>
+      <li>Or use the <strong>Configuration UI</strong> below for visual customization</li>
+    </ol>
+  </div>
+
+  <div class="demo-grid">
+    <!-- Blue Theme -->
+    <div class="demo-card">
+      <h3>💙 Blue (Default)</h3>
+      <div class="color-preview">
+        <div>
+          <div class="color-box" style="background: #3B82F6;"></div>
+          <div class="color-label">Primary</div>
+        </div>
+        <div>
+          <div class="color-box" style="background: #EFF6FF;"></div>
+          <div class="color-label">Secondary</div>
+        </div>
+        <div class="color-info">
+          <div class="color-label">Primary Color</div>
+          <div class="color-value">#3B82F6</div>
+          <div class="color-label" style="margin-top: 8px;">Secondary Color</div>
+          <div class="color-value">#EFF6FF</div>
+        </div>
+      </div>
+      <div class="widget-container">
+        <p class="widget-note">Widget appears in bottom-right →</p>
+      </div>
+    </div>
+
+    <!-- Purple Theme -->
+    <div class="demo-card">
+      <h3>💜 Purple</h3>
+      <div class="color-preview">
+        <div>
+          <div class="color-box" style="background: #8B5CF6;"></div>
+          <div class="color-label">Primary</div>
+        </div>
+        <div>
+          <div class="color-box" style="background: #F5F3FF;"></div>
+          <div class="color-label">Secondary</div>
+        </div>
+        <div class="color-info">
+          <div class="color-label">Primary Color</div>
+          <div class="color-value">#8B5CF6</div>
+          <div class="color-label" style="margin-top: 8px;">Secondary Color</div>
+          <div class="color-value">#F5F3FF</div>
+        </div>
+      </div>
+      <div class="widget-container">
+        <p class="widget-note">Widget appears in bottom-right →</p>
+      </div>
+    </div>
+
+    <!-- Green Theme -->
+    <div class="demo-card">
+      <h3>💚 Green</h3>
+      <div class="color-preview">
+        <div>
+          <div class="color-box" style="background: #10B981;"></div>
+          <div class="color-label">Primary</div>
+        </div>
+        <div>
+          <div class="color-box" style="background: #ECFDF5;"></div>
+          <div class="color-label">Secondary</div>
+        </div>
+        <div class="color-info">
+          <div class="color-label">Primary Color</div>
+          <div class="color-value">#10B981</div>
+          <div class="color-label" style="margin-top: 8px;">Secondary Color</div>
+          <div class="color-value">#ECFDF5</div>
+        </div>
+      </div>
+      <div class="widget-container">
+        <p class="widget-note">Widget appears in bottom-right →</p>
+      </div>
+    </div>
+
+    <!-- Orange Theme -->
+    <div class="demo-card">
+      <h3>🧡 Orange</h3>
+      <div class="color-preview">
+        <div>
+          <div class="color-box" style="background: #F59E0B;"></div>
+          <div class="color-label">Primary</div>
+        </div>
+        <div>
+          <div class="color-box" style="background: #FEF3C7;"></div>
+          <div class="color-label">Secondary</div>
+        </div>
+        <div class="color-info">
+          <div class="color-label">Primary Color</div>
+          <div class="color-value">#F59E0B</div>
+          <div class="color-label" style="margin-top: 8px;">Secondary Color</div>
+          <div class="color-value">#FEF3C7</div>
+        </div>
+      </div>
+      <div class="widget-container">
+        <p class="widget-note">Widget appears in bottom-right →</p>
+      </div>
+    </div>
+
+    <!-- Red Theme -->
+    <div class="demo-card">
+      <h3>❤️ Red</h3>
+      <div class="color-preview">
+        <div>
+          <div class="color-box" style="background: #EF4444;"></div>
+          <div class="color-label">Primary</div>
+        </div>
+        <div>
+          <div class="color-box" style="background: #FEE2E2;"></div>
+          <div class="color-label">Secondary</div>
+        </div>
+        <div class="color-info">
+          <div class="color-label">Primary Color</div>
+          <div class="color-value">#EF4444</div>
+          <div class="color-label" style="margin-top: 8px;">Secondary Color</div>
+          <div class="color-value">#FEE2E2</div>
+        </div>
+      </div>
+      <div class="widget-container">
+        <p class="widget-note">Widget appears in bottom-right →</p>
+      </div>
+    </div>
+
+    <!-- Teal Theme -->
+    <div class="demo-card">
+      <h3>💎 Teal</h3>
+      <div class="color-preview">
+        <div>
+          <div class="color-box" style="background: #14B8A6;"></div>
+          <div class="color-label">Primary</div>
+        </div>
+        <div>
+          <div class="color-box" style="background: #F0FDFA;"></div>
+          <div class="color-label">Secondary</div>
+        </div>
+        <div class="color-info">
+          <div class="color-label">Primary Color</div>
+          <div class="color-value">#14B8A6</div>
+          <div class="color-label" style="margin-top: 8px;">Secondary Color</div>
+          <div class="color-value">#F0FDFA</div>
+        </div>
+      </div>
+      <div class="widget-container">
+        <p class="widget-note">Widget appears in bottom-right →</p>
+      </div>
+    </div>
+  </div>
+
+  <a href="/widget-config.html?agent_id=demo" class="cta-button">
+    🎨 Open Visual Configuration Tool
+  </a>
+
+  <!-- Default Blue Widget -->
+  <webchat-widget 
+    agent-id="demo"
+    primary-color="#3B82F6"
+    secondary-color="#EFF6FF">
+  </webchat-widget>
+
+  <script src="/widget.js" async></script>
+
+  <script>
+    // Allow switching between color schemes
+    let currentWidget = null;
+    
+    document.querySelectorAll('.demo-card').forEach((card, index) => {
+      card.style.cursor = 'pointer';
+      card.addEventListener('click', () => {
+        const colors = [
+          { primary: '#3B82F6', secondary: '#EFF6FF' },
+          { primary: '#8B5CF6', secondary: '#F5F3FF' },
+          { primary: '#10B981', secondary: '#ECFDF5' },
+          { primary: '#F59E0B', secondary: '#FEF3C7' },
+          { primary: '#EF4444', secondary: '#FEE2E2' },
+          { primary: '#14B8A6', secondary: '#F0FDFA' }
+        ];
+        
+        const color = colors[index];
+        
+        // Remove existing widget
+        const existingWidget = document.querySelector('webchat-widget');
+        if (existingWidget) {
+          existingWidget.remove();
+        }
+        
+        // Create new widget with selected colors
+        const newWidget = document.createElement('webchat-widget');
+        newWidget.setAttribute('agent-id', 'demo');
+        newWidget.setAttribute('primary-color', color.primary);
+        newWidget.setAttribute('secondary-color', color.secondary);
+        document.body.appendChild(newWidget);
+        
+        // Highlight selected card
+        document.querySelectorAll('.demo-card').forEach(c => {
+          c.style.border = '2px solid transparent';
+        });
+        card.style.border = '2px solid ' + color.primary;
+      });
+    });
+  </script>
+</body>
+</html>

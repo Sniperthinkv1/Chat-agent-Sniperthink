@@ -1,0 +1,442 @@
+{
+  "info": {
+    "name": "Multi-Channel AI Agent API",
+    "description": "Complete API collection for the Multi-Channel AI Agent service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://api.example.com/v1",
+      "type": "string"
+    },
+    {
+      "key": "api_key",
+      "value": "sk_live_...",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "usr_abc123",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"name\": \"John Doe\",\n  \"company_name\": \"Acme Corp\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["users"]
+            }
+          }
+        },
+        {
+          "name": "Get Credits",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/credits",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "credits"]
+            }
+          }
+        },
+        {
+          "name": "Add Credits",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/credits",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "credits"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Phone Numbers",
+      "item": [
+        {
+          "name": "List Phone Numbers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/phone_numbers",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "phone_numbers"]
+            }
+          }
+        },
+        {
+          "name": "Add WhatsApp Number",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"platform\": \"whatsapp\",\n  \"meta_phone_number_id\": \"836990829491415\",\n  \"access_token\": \"EAAxxxx...\",\n  \"display_name\": \"+1 (234) 567-8900\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/phone_numbers",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "phone_numbers"]
+            }
+          }
+        },
+        {
+          "name": "Add Instagram Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"platform\": \"instagram\",\n  \"meta_phone_number_id\": \"17841234567890123\",\n  \"access_token\": \"EAAxxxx...\",\n  \"display_name\": \"@yourbusiness\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/phone_numbers",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "phone_numbers"]
+            }
+          }
+        },
+        {
+          "name": "Delete Phone Number",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/phone_numbers/:phone_number_id",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "phone_numbers", ":phone_number_id"],
+              "variable": [
+                {
+                  "key": "phone_number_id",
+                  "value": "pn_abc123"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Agents",
+      "item": [
+        {
+          "name": "List Agents",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/agents",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "agents"]
+            }
+          }
+        },
+        {
+          "name": "Create Agent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone_number_id\": \"pn_abc123\",\n  \"prompt_id\": \"prompt_xyz789\",\n  \"name\": \"Customer Support Agent\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/agents",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "agents"]
+            }
+          }
+        },
+        {
+          "name": "Get Agent",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/agents/:agent_id",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "agents", ":agent_id"],
+              "variable": [
+                {
+                  "key": "agent_id",
+                  "value": "agt_xyz789"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Agent",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Agent Name\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/agents/:agent_id",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "agents", ":agent_id"],
+              "variable": [
+                {
+                  "key": "agent_id",
+                  "value": "agt_xyz789"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Agent",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/agents/:agent_id",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "agents", ":agent_id"],
+              "variable": [
+                {
+                  "key": "agent_id",
+                  "value": "agt_xyz789"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Messages",
+      "item": [
+        {
+          "name": "Get All Messages",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/messages?limit=50",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "messages"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Messages by Agent",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/messages?agent_id=agt_xyz789&limit=50",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "messages"],
+              "query": [
+                {
+                  "key": "agent_id",
+                  "value": "agt_xyz789"
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Messages by Conversation",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/messages?conversation_id=conv_123",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "messages"],
+              "query": [
+                {
+                  "key": "conversation_id",
+                  "value": "conv_123"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Extractions",
+      "item": [
+        {
+          "name": "Get All Extractions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/extractions?limit=50",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "extractions"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Extractions by Agent",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/extractions?agent_id=agt_xyz789",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "extractions"],
+              "query": [
+                {
+                  "key": "agent_id",
+                  "value": "agt_xyz789"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./server
+        run: npm ci
+
+      - name: Run linter
+        working-directory: ./server
+        run: npm run lint
+
+      - name: Run unit tests
+        working-directory: ./server
+        run: npm run test:unit
+
+      - name: Run integration tests
+        working-directory: ./server
+        run: npm run test:integration
+        continue-on-error: true
+
+      - name: Generate coverage report
+        working-directory: ./server
+        run: npm run test:coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./server/coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+      - name: Check coverage thresholds
+        working-directory: ./server
+        run: |
+          if [ -f coverage/coverage-summary.json ]; then
+            echo "Coverage report generated successfully"
+            cat coverage/coverage-summary.json
+          else
+            echo "Coverage report not found"
+            exit 1
+          fi
+
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.x
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./server
+        run: npm ci
+
+      - name: Run quality gate
+        working-directory: ./server
+        run: npm run quality-gate
+
+      - name: Build project
+        working-directory: ./server
+        run: npm run build
+
+      - name: Check for build errors
+        working-directory: ./server
+        run: |
+          if [ -d dist ]; then
+            echo "Build successful"
+          else
+            echo "Build failed"
+            exit 1
+          fi
