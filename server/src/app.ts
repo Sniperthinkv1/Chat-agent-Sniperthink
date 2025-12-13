@@ -1,9 +1,19 @@
+// Early startup logging - before any imports that might hang
+console.log('[STARTUP] App.ts loading...');
+console.log('[STARTUP] NODE_ENV:', process.env['NODE_ENV']);
+console.log('[STARTUP] DATABASE_URL set:', !!process.env['DATABASE_URL']);
+console.log('[STARTUP] OPENAI_API_KEY set:', !!process.env['OPENAI_API_KEY']);
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import session from 'express-session';
+
+console.log('[STARTUP] Loading config...');
 import { appConfig } from './config';
+console.log('[STARTUP] Config loaded, port:', appConfig.port);
+
 import { logger } from './utils/logger';
 import { db } from './utils/database';
 import { initializeStorage, storage } from './utils/storage';
