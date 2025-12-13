@@ -2,11 +2,11 @@
   "name": "multi-channel-ai-agent",
   "version": "1.0.0",
   "description": "Scalable multi-channel AI agent service for WhatsApp, Instagram, and Web Chat",
-  "main": "dist/app.js",
+  "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "start": "node dist/app.js",
+    "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "test": "jest --runInBand",
     "test:watch": "jest --watch",

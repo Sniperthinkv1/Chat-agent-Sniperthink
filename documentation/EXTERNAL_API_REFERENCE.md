@@ -63,8 +63,21 @@ const response = await fetch(`${API_BASE}/api/v1/templates?phone_number_id=pn_12
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
+| **Users** | | |
+| POST | `/api/v1/users` | Create a new user |
+| GET | `/api/v1/users/:userId` | Get user details |
 | **Phone Numbers** | | |
-| GET | `/api/v1/phone-numbers?user_id=X` | List phone numbers |
+| GET | `/api/v1/phone-numbers?user_id=X` | List phone numbers (WhatsApp & Instagram) |
+| POST | `/api/v1/phone-numbers` | Add phone number (from Meta setup) |
+| GET | `/api/v1/phone-numbers/:id` | Get phone number details |
+| PATCH | `/api/v1/phone-numbers/:id` | Update phone number |
+| DELETE | `/api/v1/phone-numbers/:id` | Delete phone number |
+| **Agents** | | |
+| GET | `/api/v1/agents?user_id=X` | List agents |
+| POST | `/api/v1/agents` | Create agent (link to phone number) |
+| GET | `/api/v1/agents/:agentId` | Get agent details |
+| PATCH | `/api/v1/agents/:agentId` | Update agent |
+| DELETE | `/api/v1/agents/:agentId` | Delete agent |
 | **Templates** | | |
 | GET | `/api/v1/templates?phone_number_id=X` | List approved templates |
 | GET | `/api/v1/templates/:templateId` | Get template details + variables |
@@ -83,12 +96,311 @@ const response = await fetch(`${API_BASE}/api/v1/templates?phone_number_id=pn_12
 
 ---
 
+## Users
+
+### Create User
+
+Create a new user account. This is required before adding phone numbers.
+
+```http
+POST /api/v1/users
+Content-Type: application/json
+```
+
+**Request:**
+```json
+{
+  "email": "business@example.com",
+  "company_name": "Acme Inc"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| email | string | Yes | Unique email address |
+| company_name | string | No | Company/Business name |
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "data": {
+    "user_id": "usr_abc123def456",
+    "email": "business@example.com",
+    "company_name": "Acme Inc",
+    "created_at": "2025-12-13T10:00:00.000Z",
+    "updated_at": "2025-12-13T10:00:00.000Z"
+  },
+  "timestamp": "2025-12-13T10:00:00.000Z",
+  "correlationId": "req_abc123"
+}
+```
+
+**Error (409 Conflict):**
+```json
+{
+  "success": false,
+  "error": "Conflict",
+  "message": "User with this email already exists",
+  "timestamp": "2025-12-13T10:00:00.000Z",
+  "correlationId": "req_abc123"
+}
+```
+
+---
+
+### Get User
+
+```http
+GET /api/v1/users/{userId}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "user_id": "usr_abc123def456",
+    "email": "business@example.com",
+    "company_name": "Acme Inc",
+    "credits": {
+      "remaining_credits": 100,
+      "total_used": 50
+    },
+    "created_at": "2025-12-13T10:00:00.000Z",
+    "updated_at": "2025-12-13T10:00:00.000Z"
+  },
+  "timestamp": "2025-12-13T10:00:00.000Z",
+  "correlationId": "req_abc123"
+}
+```
+
+---
+
 ## Phone Numbers
 
 ### List Phone Numbers
 
+Returns WhatsApp and Instagram phone numbers/accounts for a user.
+
 ```http
-GET /api/v1/phone-numbers?user_id={userId}
+GET /api/v1/phone-numbers?user_id={userId}&platform={platform}
+```
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| user_id | string | Yes | User identifier |
+| platform | string | No | Filter by `whatsapp` or `instagram` |
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "pn_abc123def456",
+      "user_id": "usr_456",
+      "platform": "whatsapp",
+      "meta_phone_number_id": "1234567890",
+      "display_name": "+1 (234) 567-8900",
+      "waba_id": "9876543210",
+      "created_at": "2025-12-13T10:00:00.000Z",
+      "updated_at": "2025-12-13T10:00:00.000Z"
+    },
+    {
+      "id": "pn_xyz789ghi012",
+      "user_id": "usr_456",
+      "platform": "instagram",
+      "meta_phone_number_id": "17841234567890",
+      "display_name": "@yourbusiness",
+      "waba_id": null,
+      "created_at": "2025-12-13T09:00:00.000Z",
+      "updated_at": "2025-12-13T09:00:00.000Z"
+    }
+  ],
+  "timestamp": "2025-12-13T10:00:00.000Z",
+  "correlationId": "req_abc123"
+}
+```
+
+---
+
+### Add Phone Number
+
+Add a WhatsApp Business phone number or Instagram account from Meta setup.
+
+```http
+POST /api/v1/phone-numbers
+Content-Type: application/json
+```
+
+**Request:**
+```json
+{
+  "user_id": "usr_456",
+  "platform": "whatsapp",
+  "meta_phone_number_id": "1234567890",
+  "access_token": "EAAxxxx...",
+  "display_name": "+1 (234) 567-8900",
+  "waba_id": "9876543210"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| user_id | string | Yes | User identifier |
+| platform | string | Yes | `whatsapp` or `instagram` |
+| meta_phone_number_id | string | Yes | Meta's phone_number_id (WABA) or Instagram Account ID |
+| access_token | string | Yes | Meta access token |
+| display_name | string | No | Human-readable name |
+| waba_id | string | **Yes for WhatsApp** | WhatsApp Business Account ID (required for template management) |
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "pn_abc123def456",
+    "user_id": "usr_456",
+    "platform": "whatsapp",
+    "meta_phone_number_id": "1234567890",
+    "display_name": "+1 (234) 567-8900",
+    "waba_id": "9876543210",
+    "created_at": "2025-12-13T10:00:00.000Z",
+    "updated_at": "2025-12-13T10:00:00.000Z"
+  },
+  "timestamp": "2025-12-13T10:00:00.000Z",
+  "correlationId": "req_abc123"
+}
+```
+
+**Error (400 Bad Request - Missing waba_id for WhatsApp):**
+```json
+{
+  "success": false,
+  "error": "Bad Request",
+  "message": "waba_id is required for WhatsApp phone numbers (needed for template management)",
+  "timestamp": "2025-12-13T10:00:00.000Z",
+  "correlationId": "req_abc123"
+}
+```
+
+---
+
+### Get Phone Number
+
+```http
+GET /api/v1/phone-numbers/{phoneNumberId}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "pn_abc123def456",
+    "user_id": "usr_456",
+    "platform": "whatsapp",
+    "meta_phone_number_id": "1234567890",
+    "display_name": "+1 (234) 567-8900",
+    "waba_id": "9876543210",
+    "created_at": "2025-12-13T10:00:00.000Z",
+    "updated_at": "2025-12-13T10:00:00.000Z",
+    "agent": {
+      "agent_id": "agt_xyz789",
+      "name": "Customer Support",
+      "prompt_id": "prompt_abc123",
+      "created_at": "2025-12-13T11:00:00.000Z"
+    }
+  },
+  "timestamp": "2025-12-13T10:00:00.000Z",
+  "correlationId": "req_abc123"
+}
+```
+
+---
+
+### Update Phone Number
+
+Update access token, display name, or WABA ID.
+
+```http
+PATCH /api/v1/phone-numbers/{phoneNumberId}
+Content-Type: application/json
+```
+
+**Request:**
+```json
+{
+  "access_token": "EAAxxxx_new_token...",
+  "display_name": "Main Business Line"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| access_token | string | No | New Meta access token |
+| display_name | string | No | New display name |
+| waba_id | string | No | WhatsApp Business Account ID |
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "pn_abc123def456",
+    "user_id": "usr_456",
+    "platform": "whatsapp",
+    "meta_phone_number_id": "1234567890",
+    "display_name": "Main Business Line",
+    "waba_id": "9876543210",
+    "created_at": "2025-12-13T10:00:00.000Z",
+    "updated_at": "2025-12-13T12:00:00.000Z"
+  },
+  "timestamp": "2025-12-13T12:00:00.000Z",
+  "correlationId": "req_abc123"
+}
+```
+
+---
+
+### Delete Phone Number
+
+⚠️ **Cannot delete if an agent is linked.** Delete the agent first.
+
+```http
+DELETE /api/v1/phone-numbers/{phoneNumberId}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Phone number deleted successfully",
+  "timestamp": "2025-12-13T10:00:00.000Z",
+  "correlationId": "req_abc123"
+}
+```
+
+**Error (409 Conflict):**
+```json
+{
+  "success": false,
+  "error": "Conflict",
+  "message": "Cannot delete phone number with an active agent. Delete the agent first.",
+  "timestamp": "2025-12-13T10:00:00.000Z",
+  "correlationId": "req_abc123"
+}
+```
+
+---
+
+## Agents
+
+### List Agents
+
+```http
+GET /api/v1/agents?user_id={userId}
 ```
 
 **Response:**
@@ -97,13 +409,171 @@ GET /api/v1/phone-numbers?user_id={userId}
   "success": true,
   "data": [
     {
-      "id": "pn_123",
-      "user_id": "user_456",
-      "platform": "whatsapp",
-      "meta_phone_number_id": "1234567890",
-      "display_name": "Business Line"
+      "agent_id": "agt_xyz789abc123",
+      "user_id": "usr_456",
+      "phone_number_id": "pn_abc123def456",
+      "prompt_id": "prompt_abc123",
+      "name": "Customer Support Agent",
+      "phone_number": {
+        "platform": "whatsapp",
+        "display_name": "+1 (234) 567-8900"
+      },
+      "created_at": "2025-12-13T10:00:00.000Z",
+      "updated_at": "2025-12-13T10:00:00.000Z"
     }
   ],
+  "timestamp": "2025-12-13T10:00:00.000Z",
+  "correlationId": "req_abc123"
+}
+```
+
+---
+
+### Create Agent
+
+Link an OpenAI prompt to a phone number/Instagram account.
+
+```http
+POST /api/v1/agents
+Content-Type: application/json
+```
+
+**Request:**
+```json
+{
+  "user_id": "usr_456",
+  "phone_number_id": "pn_abc123def456",
+  "prompt_id": "prompt_abc123",
+  "name": "Customer Support Agent"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| user_id | string | Yes | User identifier |
+| phone_number_id | string | Yes | Phone number ID (from `/api/v1/phone-numbers`) |
+| prompt_id | string | Yes | OpenAI prompt ID from dashboard |
+| name | string | Yes | Human-readable agent name |
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "data": {
+    "agent_id": "agt_xyz789abc123",
+    "user_id": "usr_456",
+    "phone_number_id": "pn_abc123def456",
+    "prompt_id": "prompt_abc123",
+    "name": "Customer Support Agent",
+    "created_at": "2025-12-13T10:00:00.000Z",
+    "updated_at": "2025-12-13T10:00:00.000Z"
+  },
+  "timestamp": "2025-12-13T10:00:00.000Z",
+  "correlationId": "req_abc123"
+}
+```
+
+**Error (409 Conflict):**
+```json
+{
+  "success": false,
+  "error": "Conflict",
+  "message": "Phone number already has an active agent. Update or delete the existing agent first.",
+  "timestamp": "2025-12-13T10:00:00.000Z",
+  "correlationId": "req_abc123"
+}
+```
+
+---
+
+### Get Agent
+
+```http
+GET /api/v1/agents/{agentId}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "agent_id": "agt_xyz789abc123",
+    "user_id": "usr_456",
+    "phone_number_id": "pn_abc123def456",
+    "prompt_id": "prompt_abc123",
+    "name": "Customer Support Agent",
+    "phone_number": {
+      "platform": "whatsapp",
+      "display_name": "+1 (234) 567-8900",
+      "meta_phone_number_id": "1234567890"
+    },
+    "stats": {
+      "total_conversations": 150,
+      "active_conversations": 12
+    },
+    "created_at": "2025-12-13T10:00:00.000Z",
+    "updated_at": "2025-12-13T10:00:00.000Z"
+  },
+  "timestamp": "2025-12-13T10:00:00.000Z",
+  "correlationId": "req_abc123"
+}
+```
+
+---
+
+### Update Agent
+
+Update agent name or linked OpenAI prompt.
+
+```http
+PATCH /api/v1/agents/{agentId}
+Content-Type: application/json
+```
+
+**Request:**
+```json
+{
+  "name": "Sales Agent",
+  "prompt_id": "prompt_new456"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| name | string | No | New agent name |
+| prompt_id | string | No | New OpenAI prompt ID |
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "agent_id": "agt_xyz789abc123",
+    "user_id": "usr_456",
+    "phone_number_id": "pn_abc123def456",
+    "prompt_id": "prompt_new456",
+    "name": "Sales Agent",
+    "created_at": "2025-12-13T10:00:00.000Z",
+    "updated_at": "2025-12-13T12:00:00.000Z"
+  },
+  "timestamp": "2025-12-13T12:00:00.000Z",
+  "correlationId": "req_abc123"
+}
+```
+
+---
+
+### Delete Agent
+
+```http
+DELETE /api/v1/agents/{agentId}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Agent deleted successfully",
   "timestamp": "2025-12-13T10:00:00.000Z",
   "correlationId": "req_abc123"
 }

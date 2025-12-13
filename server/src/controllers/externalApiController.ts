@@ -34,18 +34,519 @@ import { templateService } from '../services/templateService';
 import { sendTemplateMessage } from '../services/messageService';
 import { deductCredits, getUserCredits, InsufficientCreditsError } from '../services/creditService';
 import { campaignsConfig } from '../config';
-import type { PhoneNumber, Template, Campaign, TemplateComponents } from '../models/types';
+import type { PhoneNumber, Template, Campaign, TemplateComponents, Agent, User, Platform } from '../models/types';
 
 // Helper to get correlation ID
 function getCorrelationId(req: Request): string {
     return (req.headers['x-correlation-id'] as string) || `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
 
+// Helper to generate IDs
+function generateId(prefix: string): string {
+    return `${prefix}_${uuidv4().replace(/-/g, '').substring(0, 12)}`;
+}
+
 // =====================================
-// GET /api/v1/phone-numbers
-// List phone numbers for a user
+// USER MANAGEMENT
 // =====================================
+
+// POST /api/v1/users - Create a new user
+export async function createUser(req: Request, res: Response): Promise<void> {
+    const correlationId = getCorrelationId(req);
+    const { email, company_name } = req.body;
+
+    if (!email) {
+        res.status(400).json({
+            success: false,
+            error: 'Bad Request',
+            message: 'email is required',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+        return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        res.status(400).json({
+            success: false,
+            error: 'Bad Request',
+            message: 'Invalid email format',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+        return;
+    }
+
+    try {
+        const userId = generateId('usr');
+
+        const result = await db.query<User>(
+            `INSERT INTO users (user_id, email, company_name, created_at, updated_at)
+             VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+             RETURNING user_id, email, company_name, created_at, updated_at`,
+            [userId, email, company_name || null]
+        );
+
+        // Initialize credits for new user
+        await db.query(
+            `INSERT INTO credits (user_id, remaining_credits, total_used, last_updated)
+             VALUES ($1, 100, 0, CURRENT_TIMESTAMP)
+             ON CONFLICT (user_id) DO NOTHING`,
+            [userId]
+        );
+
+        logger.info('User created via external API', { correlationId, userId, email });
+
+        res.status(201).json({
+            success: true,
+            data: result.rows[0],
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+    } catch (error: any) {
+        if (error.code === '23505') { // Unique constraint violation
+            res.status(409).json({
+                success: false,
+                error: 'Conflict',
+                message: 'User with this email already exists',
+                timestamp: new Date().toISOString(),
+                correlationId,
+            });
+            return;
+        }
+        logger.error('Failed to create user', { correlationId, email, error });
+        res.status(500).json({
+            success: false,
+            error: 'Internal Server Error',
+            message: 'Failed to create user',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+    }
+}
+
+// GET /api/v1/users/:userId - Get user details
+export async function getUser(req: Request, res: Response): Promise<void> {
+    const correlationId = getCorrelationId(req);
+    const { userId } = req.params;
+
+    try {
+        const result = await db.query<User>(
+            `SELECT user_id, email, company_name, created_at, updated_at
+             FROM users WHERE user_id = $1`,
+            [userId]
+        );
+
+        if (result.rows.length === 0) {
+            res.status(404).json({
+                success: false,
+                error: 'Not Found',
+                message: 'User not found',
+                timestamp: new Date().toISOString(),
+                correlationId,
+            });
+            return;
+        }
+
+        // Get credits
+        const creditsResult = await db.query(
+            'SELECT remaining_credits, total_used FROM credits WHERE user_id = $1',
+            [userId]
+        );
+
+        res.status(200).json({
+            success: true,
+            data: {
+                ...result.rows[0],
+                credits: creditsResult.rows[0] || { remaining_credits: 0, total_used: 0 },
+            },
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+    } catch (error) {
+        logger.error('Failed to get user', { correlationId, userId, error });
+        res.status(500).json({
+            success: false,
+            error: 'Internal Server Error',
+            message: 'Failed to get user',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+    }
+}
+
+// =====================================
+// PHONE NUMBER MANAGEMENT
+// =====================================
+
+// GET /api/v1/phone-numbers - List phone numbers for a user
 export async function listPhoneNumbers(req: Request, res: Response): Promise<void> {
+    const correlationId = getCorrelationId(req);
+    const userId = req.query.user_id as string;
+    const platform = req.query.platform as string | undefined;
+
+    if (!userId) {
+        res.status(400).json({
+            success: false,
+            error: 'Bad Request',
+            message: 'user_id query parameter is required',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+        return;
+    }
+
+    try {
+        let query = `SELECT id, user_id, platform, meta_phone_number_id, display_name, waba_id, created_at, updated_at
+             FROM phone_numbers 
+             WHERE user_id = $1 AND platform IN ('whatsapp', 'instagram')`;
+        const params: string[] = [userId];
+
+        // Filter by platform if specified
+        if (platform && ['whatsapp', 'instagram'].includes(platform)) {
+            query = `SELECT id, user_id, platform, meta_phone_number_id, display_name, waba_id, created_at, updated_at
+                     FROM phone_numbers 
+                     WHERE user_id = $1 AND platform = $2`;
+            params.push(platform);
+        }
+
+        query += ' ORDER BY created_at DESC';
+
+        const result = await db.query<PhoneNumber>(query, params);
+
+        logger.info('Listed phone numbers for external API', { 
+            correlationId, 
+            userId, 
+            platform,
+            count: result.rows.length 
+        });
+
+        res.status(200).json({
+            success: true,
+            data: result.rows.map(pn => ({
+                id: pn.id,
+                user_id: pn.user_id,
+                platform: pn.platform,
+                meta_phone_number_id: pn.meta_phone_number_id,
+                display_name: pn.display_name,
+                waba_id: pn.waba_id,
+                created_at: pn.created_at,
+                updated_at: pn.updated_at,
+            })),
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+    } catch (error) {
+        logger.error('Failed to list phone numbers', { correlationId, userId, error });
+        res.status(500).json({
+            success: false,
+            error: 'Internal Server Error',
+            message: 'Failed to list phone numbers',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+    }
+}
+
+// POST /api/v1/phone-numbers - Create a new phone number
+export async function createPhoneNumber(req: Request, res: Response): Promise<void> {
+    const correlationId = getCorrelationId(req);
+    const { user_id, platform, meta_phone_number_id, access_token, display_name, waba_id } = req.body;
+
+    // Validate required fields
+    if (!user_id || !platform || !meta_phone_number_id || !access_token) {
+        res.status(400).json({
+            success: false,
+            error: 'Bad Request',
+            message: 'user_id, platform, meta_phone_number_id, and access_token are required',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+        return;
+    }
+
+    // Validate platform
+    const validPlatforms: Platform[] = ['whatsapp', 'instagram'];
+    if (!validPlatforms.includes(platform)) {
+        res.status(400).json({
+            success: false,
+            error: 'Bad Request',
+            message: `platform must be one of: ${validPlatforms.join(', ')}`,
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+        return;
+    }
+
+    // Require waba_id for WhatsApp (needed for template management)
+    if (platform === 'whatsapp' && !waba_id) {
+        res.status(400).json({
+            success: false,
+            error: 'Bad Request',
+            message: 'waba_id is required for WhatsApp phone numbers (needed for template management)',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+        return;
+    }
+
+    try {
+        // Verify user exists
+        const userResult = await db.query('SELECT user_id FROM users WHERE user_id = $1', [user_id]);
+        if (userResult.rows.length === 0) {
+            res.status(404).json({
+                success: false,
+                error: 'Not Found',
+                message: 'User not found',
+                timestamp: new Date().toISOString(),
+                correlationId,
+            });
+            return;
+        }
+
+        const phoneNumberId = generateId('pn');
+
+        const result = await db.query<PhoneNumber>(
+            `INSERT INTO phone_numbers (id, user_id, platform, meta_phone_number_id, access_token, display_name, waba_id, created_at, updated_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+             RETURNING id, user_id, platform, meta_phone_number_id, display_name, waba_id, created_at, updated_at`,
+            [phoneNumberId, user_id, platform, meta_phone_number_id, access_token, display_name || null, waba_id || null]
+        );
+
+        logger.info('Phone number created via external API', { 
+            correlationId, 
+            phoneNumberId, 
+            userId: user_id, 
+            platform 
+        });
+
+        res.status(201).json({
+            success: true,
+            data: result.rows[0],
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+    } catch (error: any) {
+        if (error.code === '23505') { // Unique constraint violation
+            res.status(409).json({
+                success: false,
+                error: 'Conflict',
+                message: 'This meta_phone_number_id is already registered for this user and platform',
+                timestamp: new Date().toISOString(),
+                correlationId,
+            });
+            return;
+        }
+        logger.error('Failed to create phone number', { correlationId, user_id, platform, error });
+        res.status(500).json({
+            success: false,
+            error: 'Internal Server Error',
+            message: 'Failed to create phone number',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+    }
+}
+
+// GET /api/v1/phone-numbers/:phoneNumberId - Get a specific phone number
+export async function getPhoneNumber(req: Request, res: Response): Promise<void> {
+    const correlationId = getCorrelationId(req);
+    const { phoneNumberId } = req.params;
+
+    try {
+        const result = await db.query<PhoneNumber>(
+            `SELECT id, user_id, platform, meta_phone_number_id, display_name, waba_id, created_at, updated_at
+             FROM phone_numbers WHERE id = $1`,
+            [phoneNumberId]
+        );
+
+        if (result.rows.length === 0) {
+            res.status(404).json({
+                success: false,
+                error: 'Not Found',
+                message: 'Phone number not found',
+                timestamp: new Date().toISOString(),
+                correlationId,
+            });
+            return;
+        }
+
+        // Also get linked agent info
+        const agentResult = await db.query<Agent>(
+            `SELECT agent_id, name, prompt_id, created_at FROM agents WHERE phone_number_id = $1`,
+            [phoneNumberId]
+        );
+
+        res.status(200).json({
+            success: true,
+            data: {
+                ...result.rows[0],
+                agent: agentResult.rows[0] || null,
+            },
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+    } catch (error) {
+        logger.error('Failed to get phone number', { correlationId, phoneNumberId, error });
+        res.status(500).json({
+            success: false,
+            error: 'Internal Server Error',
+            message: 'Failed to get phone number',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+    }
+}
+
+// PATCH /api/v1/phone-numbers/:phoneNumberId - Update a phone number
+export async function updatePhoneNumber(req: Request, res: Response): Promise<void> {
+    const correlationId = getCorrelationId(req);
+    const { phoneNumberId } = req.params;
+    const { access_token, display_name, waba_id } = req.body;
+
+    // At least one field must be provided
+    if (!access_token && !display_name && !waba_id) {
+        res.status(400).json({
+            success: false,
+            error: 'Bad Request',
+            message: 'At least one field (access_token, display_name, or waba_id) must be provided',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+        return;
+    }
+
+    try {
+        // Check if phone number exists
+        const existingResult = await db.query<PhoneNumber>(
+            'SELECT id FROM phone_numbers WHERE id = $1',
+            [phoneNumberId]
+        );
+
+        if (existingResult.rows.length === 0) {
+            res.status(404).json({
+                success: false,
+                error: 'Not Found',
+                message: 'Phone number not found',
+                timestamp: new Date().toISOString(),
+                correlationId,
+            });
+            return;
+        }
+
+        // Build dynamic update query
+        const updates: string[] = [];
+        const values: any[] = [];
+        let paramIndex = 1;
+
+        if (access_token) {
+            updates.push(`access_token = $${paramIndex++}`);
+            values.push(access_token);
+        }
+        if (display_name !== undefined) {
+            updates.push(`display_name = $${paramIndex++}`);
+            values.push(display_name);
+        }
+        if (waba_id !== undefined) {
+            updates.push(`waba_id = $${paramIndex++}`);
+            values.push(waba_id);
+        }
+
+        updates.push(`updated_at = CURRENT_TIMESTAMP`);
+        values.push(phoneNumberId);
+
+        const result = await db.query<PhoneNumber>(
+            `UPDATE phone_numbers SET ${updates.join(', ')} WHERE id = $${paramIndex}
+             RETURNING id, user_id, platform, meta_phone_number_id, display_name, waba_id, created_at, updated_at`,
+            values
+        );
+
+        logger.info('Phone number updated via external API', { correlationId, phoneNumberId });
+
+        res.status(200).json({
+            success: true,
+            data: result.rows[0],
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+    } catch (error) {
+        logger.error('Failed to update phone number', { correlationId, phoneNumberId, error });
+        res.status(500).json({
+            success: false,
+            error: 'Internal Server Error',
+            message: 'Failed to update phone number',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+    }
+}
+
+// DELETE /api/v1/phone-numbers/:phoneNumberId - Delete a phone number
+export async function deletePhoneNumber(req: Request, res: Response): Promise<void> {
+    const correlationId = getCorrelationId(req);
+    const { phoneNumberId } = req.params;
+
+    try {
+        // Check if phone number exists
+        const existingResult = await db.query<PhoneNumber>(
+            'SELECT id FROM phone_numbers WHERE id = $1',
+            [phoneNumberId]
+        );
+
+        if (existingResult.rows.length === 0) {
+            res.status(404).json({
+                success: false,
+                error: 'Not Found',
+                message: 'Phone number not found',
+                timestamp: new Date().toISOString(),
+                correlationId,
+            });
+            return;
+        }
+
+        // Check for linked agent
+        const agentResult = await db.query('SELECT agent_id FROM agents WHERE phone_number_id = $1', [phoneNumberId]);
+        if (agentResult.rows.length > 0) {
+            res.status(409).json({
+                success: false,
+                error: 'Conflict',
+                message: 'Cannot delete phone number with an active agent. Delete the agent first.',
+                timestamp: new Date().toISOString(),
+                correlationId,
+            });
+            return;
+        }
+
+        await db.query('DELETE FROM phone_numbers WHERE id = $1', [phoneNumberId]);
+
+        logger.info('Phone number deleted via external API', { correlationId, phoneNumberId });
+
+        res.status(200).json({
+            success: true,
+            message: 'Phone number deleted successfully',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+    } catch (error) {
+        logger.error('Failed to delete phone number', { correlationId, phoneNumberId, error });
+        res.status(500).json({
+            success: false,
+            error: 'Internal Server Error',
+            message: 'Failed to delete phone number',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+    }
+}
+
+// =====================================
+// AGENT MANAGEMENT
+// =====================================
+
+// GET /api/v1/agents - List agents for a user
+export async function listAgents(req: Request, res: Response): Promise<void> {
     const correlationId = getCorrelationId(req);
     const userId = req.query.user_id as string;
 
@@ -61,38 +562,336 @@ export async function listPhoneNumbers(req: Request, res: Response): Promise<voi
     }
 
     try {
-        const result = await db.query<PhoneNumber>(
-            `SELECT id, user_id, platform, meta_phone_number_id, display_name, waba_id, created_at
-             FROM phone_numbers 
-             WHERE user_id = $1 AND platform = 'whatsapp'
-             ORDER BY created_at DESC`,
+        const result = await db.query<Agent & { phone_number_platform: string; phone_number_display_name: string }>(
+            `SELECT a.agent_id, a.user_id, a.phone_number_id, a.prompt_id, a.name, a.created_at, a.updated_at,
+                    p.platform as phone_number_platform, p.display_name as phone_number_display_name
+             FROM agents a
+             JOIN phone_numbers p ON a.phone_number_id = p.id
+             WHERE a.user_id = $1
+             ORDER BY a.created_at DESC`,
             [userId]
         );
 
-        logger.info('Listed phone numbers for external API', { 
-            correlationId, 
-            userId, 
-            count: result.rows.length 
-        });
+        logger.info('Listed agents for external API', { correlationId, userId, count: result.rows.length });
 
         res.status(200).json({
             success: true,
-            data: result.rows.map(pn => ({
-                id: pn.id,
-                user_id: pn.user_id,
-                platform: pn.platform,
-                meta_phone_number_id: pn.meta_phone_number_id,
-                display_name: pn.display_name,
+            data: result.rows.map(a => ({
+                agent_id: a.agent_id,
+                user_id: a.user_id,
+                phone_number_id: a.phone_number_id,
+                prompt_id: a.prompt_id,
+                name: a.name,
+                phone_number: {
+                    platform: a.phone_number_platform,
+                    display_name: a.phone_number_display_name,
+                },
+                created_at: a.created_at,
+                updated_at: a.updated_at,
             })),
             timestamp: new Date().toISOString(),
             correlationId,
         });
     } catch (error) {
-        logger.error('Failed to list phone numbers', { correlationId, userId, error });
+        logger.error('Failed to list agents', { correlationId, userId, error });
         res.status(500).json({
             success: false,
             error: 'Internal Server Error',
-            message: 'Failed to list phone numbers',
+            message: 'Failed to list agents',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+    }
+}
+
+// POST /api/v1/agents - Create a new agent
+export async function createAgent(req: Request, res: Response): Promise<void> {
+    const correlationId = getCorrelationId(req);
+    const { user_id, phone_number_id, prompt_id, name } = req.body;
+
+    // Validate required fields
+    if (!user_id || !phone_number_id || !prompt_id || !name) {
+        res.status(400).json({
+            success: false,
+            error: 'Bad Request',
+            message: 'user_id, phone_number_id, prompt_id, and name are required',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+        return;
+    }
+
+    try {
+        // Verify phone number exists and belongs to user
+        const phoneResult = await db.query<PhoneNumber>(
+            'SELECT id, user_id FROM phone_numbers WHERE id = $1',
+            [phone_number_id]
+        );
+
+        if (phoneResult.rows.length === 0) {
+            res.status(404).json({
+                success: false,
+                error: 'Not Found',
+                message: 'Phone number not found',
+                timestamp: new Date().toISOString(),
+                correlationId,
+            });
+            return;
+        }
+
+        const phoneNumber = phoneResult.rows[0]!;
+        if (phoneNumber.user_id !== user_id) {
+            res.status(403).json({
+                success: false,
+                error: 'Forbidden',
+                message: 'Phone number does not belong to this user',
+                timestamp: new Date().toISOString(),
+                correlationId,
+            });
+            return;
+        }
+
+        // Check if phone number already has an agent
+        const existingAgent = await db.query(
+            'SELECT agent_id FROM agents WHERE phone_number_id = $1',
+            [phone_number_id]
+        );
+
+        if (existingAgent.rows.length > 0) {
+            res.status(409).json({
+                success: false,
+                error: 'Conflict',
+                message: 'Phone number already has an active agent. Update or delete the existing agent first.',
+                timestamp: new Date().toISOString(),
+                correlationId,
+            });
+            return;
+        }
+
+        const agentId = generateId('agt');
+
+        const result = await db.query<Agent>(
+            `INSERT INTO agents (agent_id, user_id, phone_number_id, prompt_id, name, created_at, updated_at)
+             VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+             RETURNING agent_id, user_id, phone_number_id, prompt_id, name, created_at, updated_at`,
+            [agentId, user_id, phone_number_id, prompt_id, name]
+        );
+
+        logger.info('Agent created via external API', { 
+            correlationId, 
+            agentId, 
+            userId: user_id, 
+            phoneNumberId: phone_number_id 
+        });
+
+        res.status(201).json({
+            success: true,
+            data: result.rows[0],
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+    } catch (error) {
+        logger.error('Failed to create agent', { correlationId, user_id, phone_number_id, error });
+        res.status(500).json({
+            success: false,
+            error: 'Internal Server Error',
+            message: 'Failed to create agent',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+    }
+}
+
+// GET /api/v1/agents/:agentId - Get a specific agent
+export async function getAgent(req: Request, res: Response): Promise<void> {
+    const correlationId = getCorrelationId(req);
+    const { agentId } = req.params;
+
+    try {
+        const result = await db.query<Agent & { phone_number_platform: string; phone_number_display_name: string; meta_phone_number_id: string }>(
+            `SELECT a.agent_id, a.user_id, a.phone_number_id, a.prompt_id, a.name, a.created_at, a.updated_at,
+                    p.platform as phone_number_platform, p.display_name as phone_number_display_name, p.meta_phone_number_id
+             FROM agents a
+             JOIN phone_numbers p ON a.phone_number_id = p.id
+             WHERE a.agent_id = $1`,
+            [agentId]
+        );
+
+        if (result.rows.length === 0) {
+            res.status(404).json({
+                success: false,
+                error: 'Not Found',
+                message: 'Agent not found',
+                timestamp: new Date().toISOString(),
+                correlationId,
+            });
+            return;
+        }
+
+        const agent = result.rows[0]!;
+
+        // Get conversation stats
+        const statsResult = await db.query(
+            `SELECT COUNT(*) as total_conversations,
+                    COUNT(CASE WHEN is_active = true THEN 1 END) as active_conversations
+             FROM conversations WHERE agent_id = $1`,
+            [agentId]
+        );
+
+        res.status(200).json({
+            success: true,
+            data: {
+                agent_id: agent.agent_id,
+                user_id: agent.user_id,
+                phone_number_id: agent.phone_number_id,
+                prompt_id: agent.prompt_id,
+                name: agent.name,
+                phone_number: {
+                    platform: agent.phone_number_platform,
+                    display_name: agent.phone_number_display_name,
+                    meta_phone_number_id: agent.meta_phone_number_id,
+                },
+                stats: {
+                    total_conversations: parseInt(statsResult.rows[0]?.total_conversations || '0'),
+                    active_conversations: parseInt(statsResult.rows[0]?.active_conversations || '0'),
+                },
+                created_at: agent.created_at,
+                updated_at: agent.updated_at,
+            },
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+    } catch (error) {
+        logger.error('Failed to get agent', { correlationId, agentId, error });
+        res.status(500).json({
+            success: false,
+            error: 'Internal Server Error',
+            message: 'Failed to get agent',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+    }
+}
+
+// PATCH /api/v1/agents/:agentId - Update an agent
+export async function updateAgent(req: Request, res: Response): Promise<void> {
+    const correlationId = getCorrelationId(req);
+    const { agentId } = req.params;
+    const { name, prompt_id } = req.body;
+
+    // At least one field must be provided
+    if (!name && !prompt_id) {
+        res.status(400).json({
+            success: false,
+            error: 'Bad Request',
+            message: 'At least one field (name or prompt_id) must be provided',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+        return;
+    }
+
+    try {
+        // Check if agent exists
+        const existingResult = await db.query<Agent>(
+            'SELECT agent_id FROM agents WHERE agent_id = $1',
+            [agentId]
+        );
+
+        if (existingResult.rows.length === 0) {
+            res.status(404).json({
+                success: false,
+                error: 'Not Found',
+                message: 'Agent not found',
+                timestamp: new Date().toISOString(),
+                correlationId,
+            });
+            return;
+        }
+
+        // Build dynamic update query
+        const updates: string[] = [];
+        const values: any[] = [];
+        let paramIndex = 1;
+
+        if (name) {
+            updates.push(`name = $${paramIndex++}`);
+            values.push(name);
+        }
+        if (prompt_id) {
+            updates.push(`prompt_id = $${paramIndex++}`);
+            values.push(prompt_id);
+        }
+
+        updates.push(`updated_at = CURRENT_TIMESTAMP`);
+        values.push(agentId);
+
+        const result = await db.query<Agent>(
+            `UPDATE agents SET ${updates.join(', ')} WHERE agent_id = $${paramIndex}
+             RETURNING agent_id, user_id, phone_number_id, prompt_id, name, created_at, updated_at`,
+            values
+        );
+
+        logger.info('Agent updated via external API', { correlationId, agentId });
+
+        res.status(200).json({
+            success: true,
+            data: result.rows[0],
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+    } catch (error) {
+        logger.error('Failed to update agent', { correlationId, agentId, error });
+        res.status(500).json({
+            success: false,
+            error: 'Internal Server Error',
+            message: 'Failed to update agent',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+    }
+}
+
+// DELETE /api/v1/agents/:agentId - Delete an agent
+export async function deleteAgent(req: Request, res: Response): Promise<void> {
+    const correlationId = getCorrelationId(req);
+    const { agentId } = req.params;
+
+    try {
+        // Check if agent exists
+        const existingResult = await db.query<Agent>(
+            'SELECT agent_id FROM agents WHERE agent_id = $1',
+            [agentId]
+        );
+
+        if (existingResult.rows.length === 0) {
+            res.status(404).json({
+                success: false,
+                error: 'Not Found',
+                message: 'Agent not found',
+                timestamp: new Date().toISOString(),
+                correlationId,
+            });
+            return;
+        }
+
+        // Note: This will leave conversations orphaned but they can be archived
+        await db.query('DELETE FROM agents WHERE agent_id = $1', [agentId]);
+
+        logger.info('Agent deleted via external API', { correlationId, agentId });
+
+        res.status(200).json({
+            success: true,
+            message: 'Agent deleted successfully',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+    } catch (error) {
+        logger.error('Failed to delete agent', { correlationId, agentId, error });
+        res.status(500).json({
+            success: false,
+            error: 'Internal Server Error',
+            message: 'Failed to delete agent',
             timestamp: new Date().toISOString(),
             correlationId,
         });
@@ -1399,8 +2198,23 @@ function componentsToArray(components: unknown): unknown[] {
 
 // Export controller
 export const externalApiController = {
+    // Users
+    createUser,
+    getUser,
+    
     // Phone Numbers
     listPhoneNumbers,
+    createPhoneNumber,
+    getPhoneNumber,
+    updatePhoneNumber,
+    deletePhoneNumber,
+    
+    // Agents
+    listAgents,
+    createAgent,
+    getAgent,
+    updateAgent,
+    deleteAgent,
     
     // Templates - CRUD
     listTemplates,

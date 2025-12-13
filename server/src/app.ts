@@ -345,8 +345,23 @@ export class App {
     // For Dashboard to communicate with WhatsApp service
     // ===================================================
     
+    // Users
+    this.app.post('/api/v1/users', externalApiController.createUser);
+    this.app.get('/api/v1/users/:userId', externalApiController.getUser);
+    
     // Phone Numbers
     this.app.get('/api/v1/phone-numbers', externalApiController.listPhoneNumbers);
+    this.app.post('/api/v1/phone-numbers', externalApiController.createPhoneNumber);
+    this.app.get('/api/v1/phone-numbers/:phoneNumberId', externalApiController.getPhoneNumber);
+    this.app.patch('/api/v1/phone-numbers/:phoneNumberId', externalApiController.updatePhoneNumber);
+    this.app.delete('/api/v1/phone-numbers/:phoneNumberId', externalApiController.deletePhoneNumber);
+    
+    // Agents
+    this.app.get('/api/v1/agents', externalApiController.listAgents);
+    this.app.post('/api/v1/agents', externalApiController.createAgent);
+    this.app.get('/api/v1/agents/:agentId', externalApiController.getAgent);
+    this.app.patch('/api/v1/agents/:agentId', externalApiController.updateAgent);
+    this.app.delete('/api/v1/agents/:agentId', externalApiController.deleteAgent);
     
     // Templates - Full CRUD
     this.app.get('/api/v1/templates', externalApiController.listTemplates);
