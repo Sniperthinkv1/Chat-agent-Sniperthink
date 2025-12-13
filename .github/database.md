@@ -313,7 +313,7 @@ Maps custom variable names to WhatsApp positional variables with auto-fill suppo
 | `variable_name` | VARCHAR(100) | NOT NULL |
 | `position` | INTEGER | NOT NULL, CHECK 1-10 (maps to {{1}}-{{10}}) |
 | `component_type` | VARCHAR(20) | NOT NULL, DEFAULT 'BODY', CHECK IN ('HEADER', 'BODY', 'BUTTON') |
-| `extraction_field` | VARCHAR(50) | CHECK IN ('name', 'email', 'company', 'customer_phone', 'intent_level', 'urgency_level', 'lead_status_tag', 'total_score', 'smart_notification') |
+| `dashboard_mapping` | VARCHAR(50) | Dashboard's variable identifier (e.g., "name", "meetingLink"). Server stores but doesn't use - dashboard provides resolved values |
 | `default_value` | VARCHAR(255) | |
 | `sample_value` | VARCHAR(255) | |
 | `created_at` | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |

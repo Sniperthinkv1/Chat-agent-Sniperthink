@@ -370,7 +370,7 @@ export interface TemplateVariable {
   variable_name: string
   position: number
   component_type: 'HEADER' | 'BODY'
-  extraction_field: string | null
+  dashboard_mapping: string | null  // Dashboard's variable identifier (e.g., "name", "meetingLink")
   default_value: string | null
   sample_value: string
 }

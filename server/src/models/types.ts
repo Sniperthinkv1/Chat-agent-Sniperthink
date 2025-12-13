@@ -438,17 +438,6 @@ export interface UpdateTemplateData {
 }
 
 // Template variable types
-export type ExtractionFieldMapping = 
-  | 'name' 
-  | 'email' 
-  | 'company' 
-  | 'customer_phone'
-  | 'intent_level' 
-  | 'urgency_level' 
-  | 'lead_status_tag'
-  | 'total_score' 
-  | 'smart_notification';
-
 export type TemplateComponentType = 'HEADER' | 'BODY' | 'BUTTON';
 
 export interface TemplateVariable {
@@ -457,7 +446,7 @@ export interface TemplateVariable {
   variable_name: string;
   position: number; // 1-10, maps to {{1}}-{{10}}
   component_type: TemplateComponentType;
-  extraction_field?: ExtractionFieldMapping; // Optional: for server-side auto-fill
+  dashboard_mapping?: string; // Dashboard's variable identifier (e.g., "name", "meetingLink", "orderTotal")
   default_value?: string;
   sample_value?: string;
   description?: string; // Human-readable description for dashboard UI
@@ -473,7 +462,7 @@ export interface CreateTemplateVariableData {
   variable_name: string;
   position: number;
   component_type?: TemplateComponentType;
-  extraction_field?: ExtractionFieldMapping; // Optional: dashboard can ignore this
+  dashboard_mapping?: string; // Dashboard's variable identifier (e.g., "name", "meetingLink", "orderTotal")
   default_value?: string;
   sample_value?: string;
   description?: string;

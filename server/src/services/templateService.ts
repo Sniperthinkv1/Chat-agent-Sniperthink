@@ -909,13 +909,13 @@ export async function deleteTemplateFromMeta(templateId: string): Promise<boolea
 
 /**
  * Create template variable
- * Supports both server-side mapping (extraction_field) and client-side mapping
+ * Dashboard provides variable metadata; server stores it for reference
  */
 export async function createTemplateVariable(data: CreateTemplateVariableData): Promise<TemplateVariable> {
     const result = await db.query<TemplateVariable>(
         `INSERT INTO template_variables (
             variable_id, template_id, variable_name, position, 
-            component_type, extraction_field, default_value, sample_value,
+            component_type, dashboard_mapping, default_value, sample_value,
             description, is_required, placeholder
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
         RETURNING *`,
@@ -925,7 +925,7 @@ export async function createTemplateVariable(data: CreateTemplateVariableData): 
             data.variable_name,
             data.position,
             data.component_type || 'BODY',
-            data.extraction_field || null, // Optional - dashboard can leave empty
+            data.dashboard_mapping || null, // Dashboard's variable identifier
             data.default_value,
             data.sample_value,
             data.description || null,
@@ -961,15 +961,13 @@ export async function deleteTemplateVariable(variableId: string): Promise<boolea
 /**
  * Substitute variables with actual values
  * 
- * Supports two modes:
- * 1. Client-side mapping: Dashboard sends resolved values in manualValues (keyed by position "1", "2" OR variable_name)
- * 2. Server-side mapping: Uses extraction_field to auto-fill from extractionData
+ * Dashboard sends resolved values in manualValues (keyed by position "1", "2" OR variable_name)
  * 
- * Priority: manualValues (by position) > manualValues (by name) > extraction_field > default_value > sample_value
+ * Priority: manualValues (by position) > manualValues (by name) > default_value > sample_value
  */
 export async function substituteVariables(
     templateId: string,
-    extractionData?: Record<string, unknown>,
+    _extractionData?: Record<string, unknown>, // Kept for backwards compatibility
     manualValues?: Record<string, string>
 ): Promise<Record<string, string>> {
     const variables = await getTemplateVariables(templateId);
@@ -990,19 +988,13 @@ export async function substituteVariables(
             continue;
         }
 
-        // Priority 3: Server-side auto-fill from extraction_field
-        if (variable.extraction_field && extractionData?.[variable.extraction_field]) {
-            result[position] = String(extractionData[variable.extraction_field]);
-            continue;
-        }
-
-        // Priority 4: Default value
+        // Priority 3: Default value
         if (variable.default_value) {
             result[position] = variable.default_value;
             continue;
         }
 
-        // Priority 5: Sample value (last resort)
+        // Priority 4: Sample value (last resort)
         result[position] = variable.sample_value || '';
     }
 

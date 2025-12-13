@@ -71,13 +71,13 @@ async function processRecipient(
             return false;
         }
 
-        // Build variable values from contact data
+        // Build variable values from contact data using dashboard_mapping
         const templateVariables = await templateService.getTemplateVariables(template.template_id);
         const variableValues: Record<string, string> = {};
 
         for (const templateVar of templateVariables) {
-            // Check if contact has this field
-            const contactField = templateVar.extraction_field;
+            // Check if contact has this field (dashboard_mapping tells us which contact field to use)
+            const contactField = templateVar.dashboard_mapping;
             if (contactField) {
                 const value = contact[contactField as keyof Contact];
                 if (value !== undefined && value !== null) {

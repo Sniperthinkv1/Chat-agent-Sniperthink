@@ -106,9 +106,12 @@ interface CreateVariableInput {
   description?: string;      // UI help text
   is_required?: boolean;     // Must have value before sending
   placeholder?: string;      // Input placeholder hint
-  extraction_field?: string; // Optional server auto-fill (see below)
+  extraction_field?: string; // Dashboard's mapping identifier - any string value allowed
+                             // e.g., "name", "meetingLink", "orderTotal" - dashboard resolves these
 }
 ```
+
+> **Note:** `extraction_field` can be **any string** the dashboard wants to use for its own variable mapping logic. Examples: `"name"`, `"meetingLink"`, `"customField123"`. The server stores it but doesn't validate or use it - the dashboard provides resolved values when sending messages.
 
 **Example Request:**
 
@@ -139,6 +142,7 @@ const response = await fetch(`${API_BASE}/api/v1/templates`, {
         sample_value: "John",
         placeholder: "e.g., John Smith",
         is_required: false
+        // NOTE: extraction_field NOT needed - dashboard provides values at send time
       },
       {
         variable_name: "order_number",

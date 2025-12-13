@@ -342,42 +342,73 @@ export async function createTemplate(req: Request, res: Response): Promise<void>
         );
         const wabaId = phoneResult.rows[0]?.waba_id || undefined;
 
-        const template = await templateService.createTemplate({
-            template_id: uuidv4(),
-            user_id,
-            phone_number_id,
-            name,
-            category,
-            language: language || 'en',
-            components: normalizedComponents,
-            // Media header support (use extracted values if direct fields not provided)
-            header_type: extractedHeaderType,
-            header_media_url: extractedMediaUrl,
-            header_document_filename: extractedDocumentFilename,
-            // Location header support
-            header_location_latitude,
-            header_location_longitude,
-            header_location_name,
-            header_location_address,
-            // Auto-populate waba_id from phone_numbers table
-            waba_id: wabaId,
-        });
+        // Use transaction to ensure template + variables are created atomically
+        const templateId = uuidv4();
+        
+        const template = await db.transaction(async (client) => {
+            // Create template
+            const templateResult = await client.query<Template>(
+                `INSERT INTO templates (
+                    template_id, user_id, phone_number_id, name, category, language,
+                    components, header_type, header_media_url, header_document_filename,
+                    header_location_latitude, header_location_longitude,
+                    header_location_name, header_location_address, waba_id
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+                RETURNING *`,
+                [
+                    templateId,
+                    user_id,
+                    phone_number_id,
+                    name,
+                    category,
+                    language || 'en',
+                    JSON.stringify(normalizedComponents),
+                    extractedHeaderType || 'NONE',
+                    extractedMediaUrl || null,
+                    extractedDocumentFilename || null,
+                    header_location_latitude || null,
+                    header_location_longitude || null,
+                    header_location_name || null,
+                    header_location_address || null,
+                    wabaId || null,
+                ]
+            );
+            const createdTemplate = templateResult.rows[0]!;
 
-        // Create variables if provided
-        if (variables && Array.isArray(variables)) {
-            for (const variable of variables) {
-                await templateService.createTemplateVariable({
-                    variable_id: uuidv4(),
-                    template_id: template.template_id,
-                    ...variable,
-                });
+            // Create variables if provided
+            if (variables && Array.isArray(variables)) {
+                for (const variable of variables) {
+                    await client.query(
+                        `INSERT INTO template_variables (
+                            variable_id, template_id, variable_name, position, 
+                            component_type, dashboard_mapping, default_value, sample_value,
+                            description, is_required, placeholder
+                        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+                        [
+                            uuidv4(),
+                            templateId,
+                            variable.variable_name,
+                            variable.position,
+                            variable.component_type || 'BODY',
+                            variable.dashboard_mapping || null, // Dashboard's variable identifier
+                            variable.default_value || null,
+                            variable.sample_value || null,
+                            variable.description || null,
+                            variable.is_required || false,
+                            variable.placeholder || null,
+                        ]
+                    );
+                }
             }
-        }
+
+            return createdTemplate;
+        });
 
         logger.info('Template created via external API', { 
             correlationId, 
             templateId: template.template_id,
             userId: user_id,
+            variableCount: variables?.length || 0,
         });
 
         res.status(201).json({
