@@ -9,6 +9,22 @@ import {
 } from '../services/templateService';
 
 /**
+ * Normalize phone number to E.164 format with + prefix
+ * WhatsApp sends phone numbers without + but we store with +
+ */
+function normalizePhoneNumber(phone: string): string {
+    // Remove all non-digit characters except leading +
+    let normalized = phone.replace(/[^\d+]/g, '');
+    
+    // Ensure it starts with +
+    if (!normalized.startsWith('+')) {
+        normalized = '+' + normalized;
+    }
+    
+    return normalized;
+}
+
+/**
  * Interface for processed webhook message (matches QueuedMessage)
  */
 interface ProcessedMessage {
@@ -316,7 +332,7 @@ function parseWhatsAppPayload(payload: WhatsAppWebhookPayload, correlationId: st
                                 // Record the button click asynchronously (don't block message processing)
                                 handleButtonClick({
                                     phoneNumberId,
-                                    customerPhone: message.from,
+                                    customerPhone: normalizePhoneNumber(message.from),
                                     buttonId: buttonReply.id,
                                     buttonText: buttonReply.title,
                                     messageId: message.id,
@@ -337,7 +353,7 @@ function parseWhatsAppPayload(payload: WhatsAppWebhookPayload, correlationId: st
                                 // Record the button click
                                 handleButtonClick({
                                     phoneNumberId,
-                                    customerPhone: message.from,
+                                    customerPhone: normalizePhoneNumber(message.from),
                                     buttonId: message.button.payload,
                                     buttonText: message.button.text,
                                     messageId: message.id,
@@ -356,7 +372,7 @@ function parseWhatsAppPayload(payload: WhatsAppWebhookPayload, correlationId: st
                         messages.push({
                             message_id: message.id,
                             phone_number_id: phoneNumberId,
-                            customer_phone: message.from,
+                            customer_phone: normalizePhoneNumber(message.from),
                             message_text: messageText,
                             timestamp: message.timestamp,
                             platform_type: 'whatsapp'

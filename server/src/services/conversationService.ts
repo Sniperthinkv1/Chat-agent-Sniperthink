@@ -6,6 +6,22 @@ import { createOpenAIConversation } from './openaiService';
 import { ConversationModel } from '../models/Conversation';
 
 /**
+ * Normalize phone number to E.164 format with + prefix
+ * Ensures consistent phone number format across all operations
+ */
+function normalizePhoneNumber(phone: string): string {
+    // Remove all non-digit characters except leading +
+    let normalized = phone.replace(/[^\d+]/g, '');
+    
+    // Ensure it starts with +
+    if (!normalized.startsWith('+')) {
+        normalized = '+' + normalized;
+    }
+    
+    return normalized;
+}
+
+/**
  * Extended conversation interface with agent details
  */
 export interface ConversationWithAgent extends Conversation {
@@ -19,13 +35,15 @@ export async function getOrCreateConversation(
     phoneNumberId: string,
     customerPhone: string
 ): Promise<ConversationWithAgent | null> {
-    const correlationId = `get-or-create-conv-${phoneNumberId}-${customerPhone}`;
+    // Normalize phone number to ensure consistent format (E.164 with + prefix)
+    const normalizedPhone = normalizePhoneNumber(customerPhone);
+    const correlationId = `get-or-create-conv-${phoneNumberId}-${normalizedPhone}`;
     
     try {
         logger.debug('Getting or creating conversation', {
             correlationId,
             phoneNumberId,
-            customerPhone
+            customerPhone: normalizedPhone
         });
 
         // First, get the agent for this phone number
@@ -39,14 +57,14 @@ export async function getOrCreateConversation(
         }
 
         // Check if conversation already exists
-        let conversation = await getActiveConversation(agent.agent_id, customerPhone);
+        let conversation = await getActiveConversation(agent.agent_id, normalizedPhone);
         
         if (!conversation) {
             // Create new conversation
             conversation = await createConversation({
                 conversation_id: uuidv4(),
                 agent_id: agent.agent_id,
-                customer_phone: customerPhone
+                customer_phone: normalizedPhone
             });
         }
 
@@ -54,7 +72,7 @@ export async function getOrCreateConversation(
             correlationId,
             conversationId: conversation.conversation_id,
             agentId: agent.agent_id,
-            customerPhone,
+            customerPhone: normalizedPhone,
             isNew: !conversation
         });
 

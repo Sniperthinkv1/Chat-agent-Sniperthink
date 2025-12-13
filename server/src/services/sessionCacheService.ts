@@ -4,6 +4,22 @@ import { logger } from '../utils/logger';
 import { PhoneNumberType } from '../models/types';
 
 /**
+ * Normalize phone number to E.164 format with + prefix
+ * Ensures consistent phone number format across all operations
+ */
+function normalizePhoneNumber(phone: string): string {
+  // Remove all non-digit characters except leading +
+  let normalized = phone.replace(/[^\d+]/g, '');
+  
+  // Ensure it starts with +
+  if (!normalized.startsWith('+')) {
+      normalized = '+' + normalized;
+  }
+  
+  return normalized;
+}
+
+/**
  * Session cache data structure
  */
 export interface SessionData {
@@ -42,8 +58,10 @@ export async function getOrCreateSession(
   phoneNumberId: string,
   customerPhone: string
 ): Promise<SessionData | null> {
-  const correlationId = `session-${phoneNumberId}-${customerPhone}-${Date.now()}`;
-  const cacheKey = getSessionKey(phoneNumberId, customerPhone);
+  // Normalize phone number to ensure consistent format (E.164 with + prefix)
+  const normalizedPhone = normalizePhoneNumber(customerPhone);
+  const correlationId = `session-${phoneNumberId}-${normalizedPhone}-${Date.now()}`;
+  const cacheKey = getSessionKey(phoneNumberId, normalizedPhone);
 
   try {
     // Try cache first
@@ -54,7 +72,7 @@ export async function getOrCreateSession(
     }
 
     // Cache miss - query database with optimized single query
-    sessionData = await fetchSessionFromDatabase(phoneNumberId, customerPhone);
+    sessionData = await fetchSessionFromDatabase(phoneNumberId, normalizedPhone);
     
     if (!sessionData) {
       logger.warn('No agent found for phone number', {
@@ -75,7 +93,7 @@ export async function getOrCreateSession(
     logger.info('Session created and cached', {
       correlationId,
       phoneNumberId,
-      customerPhone,
+      customerPhone: normalizedPhone,
       conversationId: sessionData.conversationId,
       agentId: sessionData.agentId
     });
@@ -86,7 +104,7 @@ export async function getOrCreateSession(
     logger.error('Failed to get or create session', {
       correlationId,
       phoneNumberId,
-      customerPhone,
+      customerPhone: normalizedPhone,
       error: error instanceof Error ? error.message : 'Unknown error'
     });
     throw error;
