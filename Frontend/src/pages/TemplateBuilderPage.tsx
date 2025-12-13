@@ -27,8 +27,8 @@ export default function TemplateBuilderPage() {
     variable_name: string
     position: number
     component_type: 'HEADER' | 'BODY'
-    extraction_field: string
-    default_value: string
+    dashboard_mapping: string | null
+    default_value: string | null
     sample_value: string
   }>>([])
 
@@ -51,7 +51,7 @@ export default function TemplateBuilderPage() {
         variable_name: v.variable_name,
         position: v.position,
         component_type: v.component_type,
-        extraction_field: v.extraction_field || '',
+        dashboard_mapping: v.dashboard_mapping || '',
         default_value: v.default_value || '',
         sample_value: v.sample_value,
       })))

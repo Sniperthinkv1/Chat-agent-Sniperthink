@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webchat Widget Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        
+        p {
+            color: #6b7280;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .info-box {
+            background: #f3f4f6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .info-box h3 {
+            color: #374151;
+            margin-bottom: 10px;
+        }
+        
+        .info-box code {
+            background: #e5e7eb;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .sample-content {
+            background: #fafafa;
+            border: 1px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            color: #9ca3af;
+        }
+        
+        .arrow {
+            position: fixed;
+            bottom: 100px;
+            right: 100px;
+            font-size: 24px;
+            animation: bounce 1s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <span class="badge">✓ Widget Active</span>
+            <h1>Webchat Widget Test Page</h1>
+            <p>
+                This page tests the embedded AI chat widget. Look for the chat bubble 
+                in the <strong>bottom-right corner</strong> of the screen.
+            </p>
+            
+            <div class="info-box">
+                <h3>Widget Details</h3>
+                <p><strong>Webchat ID:</strong> <code>wc_mj4gb3fp_dsf1wl</code></p>
+                <p><strong>Agent ID:</strong> <code>ag_mj4gb3fp_dsf1wl</code></p>
+                <p><strong>Name:</strong> Customer Support Chat</p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Sample Website Content</h2>
+            <p>This simulates a real website where the widget would be embedded.</p>
+            
+            <div class="sample-content">
+                <p>📦 Your website content goes here</p>
+                <p style="margin-top: 10px;">The chat widget floats above all content</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="arrow">👇 Chat here!</div>
+
+    <!-- Customer Support Chat AI Chat Widget - Customizable Colors -->
+    <webchat-widget 
+      agent-id="wc_mj4gb3fp_dsf1wl"
+      primary-color="#3B82F6"
+      secondary-color="#EFF6FF">
+    </webchat-widget>
+    <script src="/widget.js" async type="text/javascript"></script>
+</body>
+</html>
