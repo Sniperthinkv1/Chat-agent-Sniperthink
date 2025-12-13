@@ -14,9 +14,13 @@ console.log('[STARTUP] Loading config...');
 import { appConfig } from './config';
 console.log('[STARTUP] Config loaded, port:', appConfig.port);
 
+console.log('[STARTUP] Loading logger...');
 import { logger } from './utils/logger';
+console.log('[STARTUP] Loading database...');
 import { db } from './utils/database';
+console.log('[STARTUP] Loading storage...');
 import { initializeStorage, storage } from './utils/storage';
+console.log('[STARTUP] All imports complete');
 
 // Increase max listeners to support many workers
 process.setMaxListeners(1000);
@@ -25,9 +29,13 @@ export class App {
   public app: express.Application;
 
   constructor() {
+    console.log('[STARTUP] App constructor starting...');
     this.app = express();
+    console.log('[STARTUP] Express app created');
     this.initializeMiddleware();
+    console.log('[STARTUP] Middleware initialized');
     this.initializeRoutes();
+    console.log('[STARTUP] Routes initialized');
     this.initializeErrorHandling();
   }
 
