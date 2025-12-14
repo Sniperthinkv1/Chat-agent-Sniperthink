@@ -1505,13 +1505,14 @@ export async function sendWhatsAppTemplateMessage(
     correlationId: string
 ): Promise<SendMessageResult> {
     try {
-        logger.info('Sending WhatsApp template message', {
+        logger.info('📤 Sending WhatsApp template message', {
             correlationId,
             phoneNumberId,
             customerPhone,
             templateName,
             languageCode,
-            variableCount: Object.keys(variables).length
+            variableCount: Object.keys(variables).length,
+            variables: variables, // Log actual variable values for debugging
         });
 
         // Build components array with variables
@@ -1546,6 +1547,13 @@ export async function sendWhatsAppTemplateMessage(
             }
         };
 
+        // Deep logging: Log the full request body being sent to WhatsApp
+        logger.info('📋 WhatsApp Template API Request Body', {
+            correlationId,
+            url: `${platformsConfig.whatsappBaseUrl}/${phoneNumberId}/messages`,
+            requestBody: JSON.stringify(requestBody, null, 2),
+        });
+
         // Add timeout
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout for templates
@@ -1570,24 +1578,76 @@ export async function sendWhatsAppTemplateMessage(
             clearTimeout(timeoutId);
             const fetchDuration = Date.now() - fetchStart;
 
-            logger.debug('WhatsApp Template API response received', {
+            // Get raw response text first for logging
+            const responseText = await response.text();
+            
+            logger.info('📥 WhatsApp Template API Raw Response', {
                 correlationId,
                 phoneNumberId,
                 fetchDuration,
-                statusCode: response.status
+                statusCode: response.status,
+                statusText: response.statusText,
+                responseBody: responseText,
             });
 
+            // Parse the response
+            let responseData: any;
+            try {
+                responseData = JSON.parse(responseText);
+            } catch {
+                responseData = { raw: responseText };
+            }
+
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ error: { message: 'Unknown error' } })) as any;
                 const statusCode = response.status;
-                const errorCode = errorData.error?.code;
-                const errorMessage = errorData.error?.message || `HTTP ${statusCode}`;
+                const errorCode = responseData.error?.code;
+                const errorMessage = responseData.error?.message || `HTTP ${statusCode}`;
+                const errorDetails = responseData.error?.error_data;
 
                 let retryable = false;
                 let serviceErrorCode = 'WHATSAPP_TEMPLATE_ERROR';
+                let marketingOptInRequired = false;
 
-                // Handle template-specific errors
+                // Handle template-specific errors with detailed logging
                 switch (errorCode) {
+                    case 131026: // Message undeliverable - user hasn't opted in for marketing
+                        serviceErrorCode = 'WHATSAPP_USER_NOT_OPTED_IN';
+                        marketingOptInRequired = true;
+                        logger.error('❌ USER NOT OPTED IN FOR MARKETING', {
+                            correlationId,
+                            customerPhone,
+                            templateName,
+                            errorCode,
+                            errorMessage,
+                            errorDetails,
+                            hint: 'User must opt-in to receive marketing messages. They need to message you first or explicitly opt-in.',
+                        });
+                        break;
+                    case 131047: // Re-engagement message - more than 24 hours without user response
+                        serviceErrorCode = 'WHATSAPP_REENGAGEMENT_REQUIRED';
+                        marketingOptInRequired = true;
+                        logger.error('❌ 24-HOUR WINDOW EXPIRED', {
+                            correlationId,
+                            customerPhone,
+                            templateName,
+                            errorCode,
+                            errorMessage,
+                            errorDetails,
+                            hint: 'User has not messaged in the last 24 hours. Only utility templates can be sent outside the 24-hour window.',
+                        });
+                        break;
+                    case 131053: // Marketing message limit reached for user
+                        serviceErrorCode = 'WHATSAPP_MARKETING_LIMIT_REACHED';
+                        logger.error('❌ MARKETING MESSAGE LIMIT REACHED', {
+                            correlationId,
+                            customerPhone,
+                            templateName,
+                            errorCode,
+                            errorMessage,
+                            errorDetails,
+                            hint: 'User has received too many marketing messages. Wait for them to engage or use utility template.',
+                        });
+                        break;
                     case 132000: // Template param value has invalid format
                         serviceErrorCode = 'WHATSAPP_TEMPLATE_PARAM_INVALID';
                         break;
@@ -1602,6 +1662,15 @@ export async function sendWhatsAppTemplateMessage(
                         break;
                     case 132012: // Template param count mismatch
                         serviceErrorCode = 'WHATSAPP_TEMPLATE_PARAM_MISMATCH';
+                        logger.error('❌ TEMPLATE PARAM COUNT MISMATCH', {
+                            correlationId,
+                            customerPhone,
+                            templateName,
+                            errorCode,
+                            errorMessage,
+                            errorDetails,
+                            hint: 'Number of variables provided does not match template requirements.',
+                        });
                         break;
                     case 132015: // Template is paused
                         serviceErrorCode = 'WHATSAPP_TEMPLATE_PAUSED';
@@ -1619,7 +1688,7 @@ export async function sendWhatsAppTemplateMessage(
                         }
                 }
 
-                logger.warn('WhatsApp Template API error', {
+                logger.warn('⚠️ WhatsApp Template API error', {
                     correlationId,
                     phoneNumberId,
                     customerPhone,
@@ -1627,6 +1696,9 @@ export async function sendWhatsAppTemplateMessage(
                     statusCode,
                     errorCode,
                     errorMessage,
+                    errorDetails,
+                    fullErrorResponse: responseData.error,
+                    marketingOptInRequired,
                     retryable
                 });
 
@@ -1638,8 +1710,21 @@ export async function sendWhatsAppTemplateMessage(
                 };
             }
 
-            const data = await response.json() as any;
-            const messageId = data.messages?.[0]?.id;
+            const messageId = responseData.messages?.[0]?.id;
+            const messageStatus = responseData.messages?.[0]?.message_status;
+            const contacts = responseData.contacts;
+
+            // Log successful response details
+            logger.info('✅ WhatsApp template message accepted', {
+                correlationId,
+                phoneNumberId,
+                customerPhone,
+                templateName,
+                messageId,
+                messageStatus,
+                contacts,
+                hint: messageStatus === 'accepted' ? 'Message queued for delivery. Watch for delivery status webhook.' : undefined,
+            });
 
             if (!messageId) {
                 logger.warn('WhatsApp Template API returned no message ID', {
@@ -1647,7 +1732,7 @@ export async function sendWhatsAppTemplateMessage(
                     phoneNumberId,
                     customerPhone,
                     templateName,
-                    response: data
+                    response: responseData
                 });
 
                 return {
