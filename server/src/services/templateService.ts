@@ -17,6 +17,7 @@ import type {
     CreateTemplateSendData,
     TemplateComponents,
     TemplateStatus,
+    TemplateCategory,
     PhoneNumberWithRateLimit,
     TemplateHeaderFormat,
     TemplateButtonDefinition,
@@ -608,14 +609,33 @@ export async function syncTemplatesFromMeta(
 
     const data = await response.json() as MetaTemplateListResponse;
     
-    logger.info('Fetched templates from Meta', { 
+    logger.info('📋 Fetched templates from Meta', { 
         correlationId, 
-        count: data.data?.length || 0 
+        count: data.data?.length || 0,
+        rawData: JSON.stringify(data.data?.map(t => ({
+            id: t.id,
+            name: t.name,
+            status: t.status,
+            category: t.category,
+            language: t.language,
+            quality_score: (t as any).quality_score,
+        })), null, 2),
     });
 
     // Process each template from Meta
     for (const metaTemplate of data.data || []) {
         try {
+            // Log each template's raw data for debugging
+            logger.info('📄 Processing Meta template', {
+                correlationId,
+                templateId: metaTemplate.id,
+                name: metaTemplate.name,
+                status: metaTemplate.status,
+                category: metaTemplate.category,
+                language: metaTemplate.language,
+                quality_score: (metaTemplate as any).quality_score,
+                rejected_reason: metaTemplate.rejected_reason,
+            });
             // Check if template already exists in our database
             const existingResult = await db.query<Template>(
                 `SELECT * FROM templates 
@@ -625,22 +645,45 @@ export async function syncTemplatesFromMeta(
             const existing = existingResult.rows[0];
 
             // Map Meta status to our status
+            // Meta statuses: APPROVED, PENDING, REJECTED, PAUSED, DISABLED, IN_APPEAL, PENDING_DELETION, DELETED, LIMIT_EXCEEDED
             const statusMap: Record<string, TemplateStatus> = {
                 APPROVED: 'APPROVED',
                 PENDING: 'PENDING',
                 REJECTED: 'REJECTED',
                 PAUSED: 'PAUSED',
                 DISABLED: 'DISABLED',
+                IN_APPEAL: 'PENDING',
+                PENDING_DELETION: 'DISABLED',
+                DELETED: 'DISABLED',
+                LIMIT_EXCEEDED: 'PAUSED',
             };
             const status = statusMap[metaTemplate.status] || 'PENDING';
+            
+            logger.info('📊 Template status mapping', {
+                correlationId,
+                templateName: metaTemplate.name,
+                metaStatus: metaTemplate.status,
+                metaCategory: metaTemplate.category,
+                mappedStatus: status,
+                qualityScore: (metaTemplate as any).quality_score,
+            });
 
             // Convert Meta components to our format (now returns headerType too)
             const { components, headerType } = fromMetaComponents(metaTemplate.components);
 
             if (existing) {
-                // Update existing template
+                // Update existing template with both status AND category from Meta
+                logger.info('🔄 Updating existing template', {
+                    correlationId,
+                    templateId: existing.template_id,
+                    oldStatus: existing.status,
+                    newStatus: status,
+                    oldCategory: existing.category,
+                    newCategory: metaTemplate.category,
+                });
                 const updatedTemplate = await updateTemplate(existing.template_id, {
                     status,
+                    category: metaTemplate.category as TemplateCategory, // Sync category from Meta!
                     meta_template_id: metaTemplate.id,
                     rejection_reason: metaTemplate.rejected_reason || undefined,
                     approved_at: status === 'APPROVED' ? new Date() : undefined,
