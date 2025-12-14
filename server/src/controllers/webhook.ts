@@ -572,7 +572,7 @@ async function handleMessageDeliveryStatus(
     try {
         const { id: messageId, status: deliveryStatus, errors } = status;
         
-        // Update message_delivery_status table
+        // Update message_delivery_status table (tracks full lifecycle: sent, delivered, read, failed)
         await db.query(
             `INSERT INTO message_delivery_status (message_id, platform_message_id, status, error_message, updated_at)
              VALUES ($1, $1, $2, $3, CURRENT_TIMESTAMP)
@@ -583,11 +583,14 @@ async function handleMessageDeliveryStatus(
             [messageId, deliveryStatus, errors?.[0]?.message || null]
         );
 
-        // Update messages table status
-        await db.query(
-            `UPDATE messages SET status = $1 WHERE platform_message_id = $2`,
-            [deliveryStatus, messageId]
-        );
+        // Update messages table status only for states allowed by constraint ('sent', 'failed', 'pending')
+        // 'delivered' and 'read' are tracked in message_delivery_status table only
+        if (deliveryStatus === 'sent' || deliveryStatus === 'failed') {
+            await db.query(
+                `UPDATE messages SET status = $1 WHERE platform_message_id = $2`,
+                [deliveryStatus, messageId]
+            );
+        }
 
         // Update template_sends table if this is a template message
         const templateStatusMap: Record<string, string> = {
