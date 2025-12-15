@@ -148,10 +148,11 @@ async function processRecipient(
         }
         // Also try replacing by variable name pattern for any remaining
         for (const templateVar of templateVariables) {
-            if (variableValues[templateVar.variable_name]) {
+            const varValue = variableValues[templateVar.variable_name];
+            if (varValue) {
                 templateText = templateText.replace(
                     new RegExp(`\\{\\{${templateVar.position}\\}\\}`, 'g'), 
-                    variableValues[templateVar.variable_name]
+                    varValue
                 );
             }
         }
