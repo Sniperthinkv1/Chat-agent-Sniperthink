@@ -168,12 +168,28 @@ async function processRecipient(
             const sendId = `send_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
             const messageId = result.messageId || `msg_campaign_${Date.now()}`;
             
+            await rateLimitService.incrementUsage(campaign.phone_number_id);
+            
+            // FIRST: Create template_sends record (before updating recipient, due to FK constraint)
+            await templateService.createTemplateSend({
+                send_id: sendId,
+                template_id: template.template_id,
+                campaign_id: campaign.campaign_id,
+                customer_phone: contact.phone,
+                conversation_id: conversationId,
+            });
+            
+            // Update status if we have platform message ID
+            if (result.messageId) {
+                await templateService.updateTemplateSendStatus(sendId, 'SENT', result.messageId);
+            }
+            
+            // THEN: Update recipient status (now FK constraint will pass)
             await campaignService.updateRecipientStatus(
                 recipient.recipient_id,
                 'SENT',
                 { template_send_id: sendId }
             );
-            await rateLimitService.incrementUsage(campaign.phone_number_id);
             
             // Get next sequence number and store message in messages table
             try {
@@ -221,20 +237,6 @@ async function processRecipient(
                 });
                 // Continue - message was sent successfully, just storage failed
             }
-            
-            // Track in template sends
-            await templateService.createTemplateSend({
-                send_id: sendId,
-                template_id: template.template_id,
-                campaign_id: campaign.campaign_id,
-                customer_phone: contact.phone,
-                conversation_id: conversationId,
-            });
-            
-            // Update status if we have platform message ID
-            if (result.messageId) {
-                await templateService.updateTemplateSendStatus(sendId, 'SENT', result.messageId);
-            }
 
             // Update contact messaging stats
             try {
@@ -258,12 +260,7 @@ async function processRecipient(
         } else {
             const sendId = `send_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
             
-            await campaignService.updateRecipientStatus(
-                recipient.recipient_id,
-                'FAILED',
-                { template_send_id: sendId, error_message: result.error ?? 'Send failed' }
-            );
-
+            // FIRST: Create template_sends record (before updating recipient, due to FK constraint)
             await templateService.createTemplateSend({
                 send_id: sendId,
                 template_id: template.template_id,
@@ -278,6 +275,13 @@ async function processRecipient(
                 undefined, 
                 undefined, 
                 result.error ?? 'Send failed'
+            );
+            
+            // THEN: Update recipient status (now FK constraint will pass)
+            await campaignService.updateRecipientStatus(
+                recipient.recipient_id,
+                'FAILED',
+                { template_send_id: sendId, error_message: result.error ?? 'Send failed' }
             );
 
             return false;
