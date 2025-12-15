@@ -4,6 +4,7 @@ import { logger } from '../utils/logger';
 import { MessageModel } from '../models/Message';
 import { ConversationModel } from '../models/Conversation';
 import { QueryOptions } from '../models/types';
+import { getMessageDeliveryStatus } from '../services/messageService';
 
 export class MessagesController {
   private messageModel: MessageModel;
@@ -13,6 +14,104 @@ export class MessagesController {
     this.messageModel = new MessageModel((db as any).pool);
     this.conversationModel = new ConversationModel((db as any).pool);
   }
+
+  /**
+   * GET /users/:user_id/messages/:message_id/status
+   * Get delivery status and failure reason for a specific message
+   */
+  getMessageStatus = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { user_id, message_id } = req.params;
+
+      // First, verify the message belongs to this user
+      const messageQuery = `
+        SELECT 
+          m.message_id,
+          m.conversation_id,
+          m.sender,
+          m.text,
+          m.timestamp,
+          m.status,
+          m.sequence_no,
+          m.platform_message_id,
+          c.agent_id,
+          c.customer_phone,
+          a.name as agent_name,
+          a.phone_number_id,
+          pn.platform,
+          pn.display_name as phone_display_name
+        FROM messages m
+        JOIN conversations c ON m.conversation_id = c.conversation_id
+        JOIN agents a ON c.agent_id = a.agent_id
+        JOIN phone_numbers pn ON a.phone_number_id = pn.id
+        WHERE m.message_id = $1 AND a.user_id = $2
+      `;
+
+      const messageResult = await (db as any).pool.query(messageQuery, [message_id, user_id]);
+
+      if (messageResult.rows.length === 0) {
+        res.status(404).json({
+          error: 'Message not found',
+          message: 'The specified message does not exist or does not belong to this user',
+          timestamp: new Date().toISOString(),
+          correlationId: req.correlationId,
+        });
+        return;
+      }
+
+      const message = messageResult.rows[0];
+
+      // Get delivery status with error details
+      const deliveryStatus = await getMessageDeliveryStatus(message_id!);
+
+      logger.info('Message status retrieved successfully', {
+        user_id,
+        message_id,
+        status: message.status,
+        correlationId: req.correlationId,
+      });
+
+      res.status(200).json({
+        success: true,
+        data: {
+          message_id: message.message_id,
+          conversation_id: message.conversation_id,
+          customer_phone: message.customer_phone,
+          agent_id: message.agent_id,
+          agent_name: message.agent_name,
+          platform: message.platform,
+          phone_number_id: message.phone_number_id,
+          phone_display_name: message.phone_display_name,
+          sender: message.sender,
+          text: message.text,
+          timestamp: message.timestamp,
+          sequence_no: message.sequence_no,
+          // Status info
+          status: message.status,
+          platform_message_id: message.platform_message_id || deliveryStatus?.platformMessageId || null,
+          // Delivery details (from message_delivery_status table)
+          delivery_status: deliveryStatus ? {
+            status: deliveryStatus.status,
+            error_reason: deliveryStatus.error || null,
+            updated_at: deliveryStatus.updatedAt
+          } : null,
+          // If failed, include error reason at top level for easy access
+          is_failed: message.status === 'failed',
+          failure_reason: deliveryStatus?.error || null
+        },
+        timestamp: new Date().toISOString(),
+        correlationId: req.correlationId,
+      });
+    } catch (error) {
+      logger.error('Error retrieving message status', {
+        error: (error as Error).message,
+        user_id: req.params['user_id'],
+        message_id: req.params['message_id'],
+        correlationId: req.correlationId,
+      });
+      next(error);
+    }
+  };
 
   /**
    * GET /users/:user_id/messages

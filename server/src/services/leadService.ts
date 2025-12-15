@@ -109,6 +109,8 @@ export interface LeadMessage {
     timestamp: Date;
     status: string;
     sequence_no: number;
+    is_template: boolean;
+    template_id: string | null;
 }
 
 export interface LeadMessagesResponse {
@@ -546,11 +548,15 @@ export async function getLeadMessages(
                 m.text,
                 m.timestamp,
                 m.status,
-                m.sequence_no
+                m.sequence_no,
+                m.platform_message_id,
+                CASE WHEN ts.send_id IS NOT NULL THEN true ELSE false END as is_template,
+                ts.template_id
             FROM messages m
             JOIN conversations c ON m.conversation_id = c.conversation_id
             JOIN agents a ON c.agent_id = a.agent_id
             JOIN phone_numbers pn ON a.phone_number_id = pn.id
+            LEFT JOIN template_sends ts ON m.platform_message_id = ts.platform_message_id
             WHERE a.user_id = $1 AND c.customer_phone = $2
         `;
 
@@ -618,6 +624,8 @@ export async function getLeadMessages(
             phone_number_id: row.phone_number_id,
             sender: row.sender,
             text: row.text,
+            is_template: row.is_template || false,
+            template_id: row.template_id || null,
             timestamp: row.timestamp,
             status: row.status,
             sequence_no: row.sequence_no

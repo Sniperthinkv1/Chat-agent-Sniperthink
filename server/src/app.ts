@@ -226,6 +226,7 @@ export class App {
     // Message and conversation routes
     this.app.get('/users/:user_id/messages', messagesController.getMessages);
     this.app.get('/users/:user_id/messages/stats', messagesController.getMessageStats);
+    this.app.get('/users/:user_id/messages/:message_id/status', messagesController.getMessageStatus);
     this.app.get('/users/:user_id/conversations', messagesController.getConversations);
     this.app.get('/users/:user_id/conversations/:conversation_id', messagesController.getConversation);
     this.app.get('/users/:user_id/conversations/:conversation_id/messages', messagesController.getConversationMessages);
