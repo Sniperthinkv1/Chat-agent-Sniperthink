@@ -94,6 +94,13 @@ async function processRecipient(
         }
 
         const conversationId = conversationResult.conversation_id;
+        
+        logger.info('📞 Found/created conversation for campaign recipient', {
+            correlationId,
+            conversationId,
+            agentId: conversationResult.agent?.agent_id,
+            contactPhone: contact.phone,
+        });
 
         // Build variable values - PRIORITY:
         // 1. Per-recipient variable_values (from external API)
@@ -170,16 +177,24 @@ async function processRecipient(
             
             // Get next sequence number and store message in messages table
             try {
+                logger.info('📝 Storing campaign message in database', {
+                    correlationId,
+                    conversationId,
+                    messageId,
+                    templateText: templateText.substring(0, 100),
+                });
+
                 const seqResult = await db.query(
                     `SELECT COALESCE(MAX(sequence_no), 0) + 1 as next_seq FROM messages WHERE conversation_id = $1`,
                     [conversationId]
                 );
                 const nextSeqNo = seqResult.rows[0].next_seq;
                 
-                await db.query(
+                const insertResult = await db.query(
                     `INSERT INTO messages (message_id, conversation_id, sender, text, timestamp, status, sequence_no, platform_message_id)
                      VALUES ($1, $2, 'agent', $3, CURRENT_TIMESTAMP, 'sent', $4, $5)
-                     ON CONFLICT (message_id) DO NOTHING`,
+                     ON CONFLICT (message_id) DO NOTHING
+                     RETURNING message_id`,
                     [messageId, conversationId, templateText, nextSeqNo, result.messageId]
                 );
 
@@ -189,17 +204,20 @@ async function processRecipient(
                     [conversationId]
                 );
 
-                logger.debug('Campaign message stored in database', {
+                logger.info('✅ Campaign message stored successfully', {
                     correlationId,
                     conversationId,
                     messageId,
                     sequenceNo: nextSeqNo,
+                    inserted: insertResult.rowCount ?? 0,
                 });
             } catch (msgError) {
-                logger.warn('Failed to store campaign message in messages table', {
+                logger.error('❌ Failed to store campaign message in messages table', {
                     correlationId,
                     conversationId,
+                    messageId,
                     error: msgError instanceof Error ? msgError.message : 'Unknown error',
+                    stack: msgError instanceof Error ? msgError.stack : undefined,
                 });
                 // Continue - message was sent successfully, just storage failed
             }
