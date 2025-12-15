@@ -773,6 +773,7 @@ export interface CampaignRecipient {
   status: CampaignRecipientStatus;
   skip_reason?: SkipReason;
   error_message?: string;
+  variable_values?: Record<string, string>;  // Per-recipient template variables: { "1": "value" }
   queued_at?: Date;
   sent_at?: Date;
   delivered_at?: Date;
@@ -785,6 +786,7 @@ export interface CreateCampaignRecipientData {
   recipient_id: string;
   campaign_id: string;
   contact_id: string;
+  variable_values?: Record<string, string>;  // Per-recipient template variables
 }
 
 // ============================================================

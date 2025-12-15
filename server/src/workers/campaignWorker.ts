@@ -71,22 +71,37 @@ async function processRecipient(
             return false;
         }
 
-        // Build variable values from contact data using dashboard_mapping
+        // Build variable values - PRIORITY:
+        // 1. Per-recipient variable_values (from external API)
+        // 2. Dashboard mapping from contact fields
+        // 3. Default values from template_variables
         const templateVariables = await templateService.getTemplateVariables(template.template_id);
         const variableValues: Record<string, string> = {};
 
+        // First, check for stored per-recipient variables (keyed by position: "1", "2", etc.)
+        const recipientVars = recipient.variable_values || {};
+        
         for (const templateVar of templateVariables) {
-            // Check if contact has this field (dashboard_mapping tells us which contact field to use)
+            const position = String(templateVar.position);
+            
+            // Priority 1: Per-recipient variables (from external API request)
+            if (recipientVars[position]) {
+                variableValues[templateVar.variable_name] = String(recipientVars[position]);
+                continue;
+            }
+            
+            // Priority 2: Dashboard mapping from contact fields
             const contactField = templateVar.dashboard_mapping;
             if (contactField) {
                 const value = contact[contactField as keyof Contact];
                 if (value !== undefined && value !== null) {
                     variableValues[templateVar.variable_name] = String(value);
+                    continue;
                 }
             }
             
-            // If still no value, use default
-            if (!variableValues[templateVar.variable_name] && templateVar.default_value) {
+            // Priority 3: Default values
+            if (templateVar.default_value) {
                 variableValues[templateVar.variable_name] = templateVar.default_value;
             }
         }

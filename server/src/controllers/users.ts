@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { v4 as uuidv4 } from 'uuid';
 import { UserService } from '../services/userService';
 import * as creditService from '../services/creditService';
 import { db } from '../utils/database';
@@ -31,11 +32,14 @@ export class UsersController {
         display_name 
       } = req.body;
 
+      // Auto-generate id if not provided
+      const phoneNumberId = id || uuidv4();
+
       // Validate required fields
-      if (!id || !platform || !meta_phone_number_id || !access_token) {
+      if (!platform || !meta_phone_number_id || !access_token) {
         res.status(400).json({
           error: 'Missing required fields',
-          message: 'id, platform, meta_phone_number_id, and access_token are required',
+          message: 'platform, meta_phone_number_id, and access_token are required',
           timestamp: new Date().toISOString(),
           correlationId: req.correlationId,
         });
@@ -55,7 +59,7 @@ export class UsersController {
       }
 
       const phoneNumberData: CreatePhoneNumberData = {
-        id,
+        id: phoneNumberId,
         user_id: user_id!,
         platform,
         meta_phone_number_id,
@@ -77,7 +81,7 @@ export class UsersController {
 
       logger.info('Phone number added successfully', {
         user_id: req.params['user_id'],
-        phone_number_id: id,
+        phone_number_id: phoneNumberId,
         platform,
         correlationId: req.correlationId,
       });

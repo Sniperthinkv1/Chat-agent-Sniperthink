@@ -461,6 +461,7 @@ Tracks individual recipient status within campaigns.
 | `status` | VARCHAR(20) | NOT NULL, DEFAULT 'PENDING', CHECK IN ('PENDING', 'QUEUED', 'SENT', 'DELIVERED', 'READ', 'FAILED', 'SKIPPED') |
 | `skip_reason` | VARCHAR(50) | CHECK IN ('OPTED_OUT', 'RATE_LIMITED', 'INVALID_PHONE', 'DUPLICATE', 'RECENTLY_CONTACTED') |
 | `error_message` | TEXT | |
+| `variable_values` | JSONB | DEFAULT '{}' (Per-recipient template variables: `{ "1": "value1", "2": "value2" }`) |
 | `queued_at` | TIMESTAMP | |
 | `sent_at` | TIMESTAMP | |
 | `delivered_at` | TIMESTAMP | |

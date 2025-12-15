@@ -622,10 +622,13 @@ export async function addUserPhoneNumber(req: Request, res: Response): Promise<v
     const { userId } = req.params;
     const { id, platform, meta_phone_number_id, access_token, display_name, waba_id } = req.body;
 
-    if (!id || !platform || !meta_phone_number_id || !access_token) {
+    // Auto-generate id if not provided
+    const phoneNumberId = id || uuidv4();
+
+    if (!platform || !meta_phone_number_id || !access_token) {
         res.status(400).json({
             error: 'Bad Request',
-            message: 'id, platform, meta_phone_number_id, and access_token are required',
+            message: 'platform, meta_phone_number_id, and access_token are required',
             timestamp: new Date().toISOString(),
             correlationId,
         });
@@ -669,7 +672,7 @@ export async function addUserPhoneNumber(req: Request, res: Response): Promise<v
         // Check if phone number already exists
         const existing = await db.query(
             'SELECT id FROM phone_numbers WHERE id = $1',
-            [id]
+            [phoneNumberId]
         );
 
         if (existing.rows[0]) {
@@ -688,10 +691,10 @@ export async function addUserPhoneNumber(req: Request, res: Response): Promise<v
              (id, user_id, platform, meta_phone_number_id, access_token, display_name, waba_id, created_at)
              VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
              RETURNING *`,
-            [id, userId, platform, meta_phone_number_id, access_token, display_name, waba_id]
+            [phoneNumberId, userId, platform, meta_phone_number_id, access_token, display_name, waba_id]
         );
 
-        logger.info('Phone number added by admin', { correlationId, userId, phoneNumberId: id });
+        logger.info('Phone number added by admin', { correlationId, userId, phoneNumberId });
 
         res.status(201).json({
             success: true,
@@ -870,7 +873,7 @@ export async function getAgent(req: Request, res: Response): Promise<void> {
 export async function createUserAgent(req: Request, res: Response): Promise<void> {
     const correlationId = getCorrelationId(req);
     const { userId } = req.params;
-    const { phone_number_id, prompt_id, name, description } = req.body;
+    const { phone_number_id, prompt_id, name } = req.body;
 
     if (!userId) {
         res.status(400).json({
@@ -925,10 +928,10 @@ export async function createUserAgent(req: Request, res: Response): Promise<void
         const agent_id = uuidv4();
         const result = await db.query<Agent>(
             `INSERT INTO agents 
-             (agent_id, user_id, phone_number_id, prompt_id, name, description, created_at)
-             VALUES ($1, $2, $3, $4, $5, $6, NOW())
+             (agent_id, user_id, phone_number_id, prompt_id, name, created_at)
+             VALUES ($1, $2, $3, $4, $5, NOW())
              RETURNING *`,
-            [agent_id, userId, phone_number_id, prompt_id, name, description]
+            [agent_id, userId, phone_number_id, prompt_id, name]
         );
 
         logger.info('Agent created by admin', { correlationId, userId, agentId: agent_id });
@@ -957,7 +960,7 @@ export async function createUserAgent(req: Request, res: Response): Promise<void
 export async function updateUserAgent(req: Request, res: Response): Promise<void> {
     const correlationId = getCorrelationId(req);
     const { userId, agentId } = req.params;
-    const { name, description, prompt_id } = req.body;
+    const { name, prompt_id } = req.body;
 
     if (!userId || !agentId) {
         res.status(400).json({
@@ -977,12 +980,6 @@ export async function updateUserAgent(req: Request, res: Response): Promise<void
         if (name !== undefined) {
             fields.push(`name = $${paramIndex}`);
             values.push(name);
-            paramIndex++;
-        }
-
-        if (description !== undefined) {
-            fields.push(`description = $${paramIndex}`);
-            values.push(description);
             paramIndex++;
         }
 

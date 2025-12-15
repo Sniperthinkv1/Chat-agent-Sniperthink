@@ -257,10 +257,12 @@ export async function startCampaign(campaignId: string): Promise<Campaign> {
 /**
  * Start a campaign with specific contact IDs (used by external API)
  * This skips the filter-based recipient lookup
+ * @param contactVariablesMap - Optional map of contactId to variable values
  */
 export async function startCampaignWithContactIds(
     campaignId: string,
-    contactIds: string[]
+    contactIds: string[],
+    contactVariablesMap?: Record<string, Record<string, string>>
 ): Promise<Campaign> {
     const campaign = await getCampaignById(campaignId);
     if (!campaign) {
@@ -281,8 +283,8 @@ export async function startCampaignWithContactIds(
         throw new Error('No eligible recipients found');
     }
 
-    // Create recipient records
-    await createRecipientsFromContacts(campaignId, eligibleContacts);
+    // Create recipient records with per-contact variables
+    await createRecipientsFromContactsWithVariables(campaignId, eligibleContacts, contactVariablesMap);
 
     // Update campaign status
     const updated = await updateCampaign(campaignId, {
@@ -538,11 +540,11 @@ export async function deleteTrigger(triggerId: string): Promise<boolean> {
  */
 export async function createRecipient(data: CreateCampaignRecipientData): Promise<CampaignRecipient> {
     const result = await db.query<CampaignRecipient>(
-        `INSERT INTO campaign_recipients (recipient_id, campaign_id, contact_id)
-         VALUES ($1, $2, $3)
+        `INSERT INTO campaign_recipients (recipient_id, campaign_id, contact_id, variable_values)
+         VALUES ($1, $2, $3, $4)
          ON CONFLICT (campaign_id, contact_id) DO NOTHING
          RETURNING *`,
-        [data.recipient_id, data.campaign_id, data.contact_id]
+        [data.recipient_id, data.campaign_id, data.contact_id, JSON.stringify(data.variable_values || {})]
     );
     return result.rows[0]!;
 }
@@ -559,6 +561,34 @@ async function createRecipientsFromContacts(campaignId: string, contacts: Contac
                 recipient_id: uuidv4(),
                 campaign_id: campaignId,
                 contact_id: contact.contact_id,
+            });
+            created++;
+        } catch {
+            // Ignore duplicates
+        }
+    }
+
+    return created;
+}
+
+/**
+ * Create recipients from contacts list with per-contact variable values
+ */
+async function createRecipientsFromContactsWithVariables(
+    campaignId: string, 
+    contacts: Contact[],
+    contactVariablesMap?: Record<string, Record<string, string>>
+): Promise<number> {
+    let created = 0;
+
+    for (const contact of contacts) {
+        try {
+            const variableValues = contactVariablesMap?.[contact.contact_id] || {};
+            await createRecipient({
+                recipient_id: uuidv4(),
+                campaign_id: campaignId,
+                contact_id: contact.contact_id,
+                variable_values: variableValues,
             });
             created++;
         } catch {
@@ -598,6 +628,7 @@ export async function getPendingRecipients(
         status: row.status,
         skip_reason: row.skip_reason,
         error_message: row.error_message,
+        variable_values: row.variable_values,  // Include per-recipient variables
         queued_at: row.queued_at,
         sent_at: row.sent_at,
         delivered_at: row.delivered_at,

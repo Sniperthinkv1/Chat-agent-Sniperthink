@@ -2101,8 +2101,9 @@ export async function createExternalCampaign(req: Request, res: Response): Promi
         // Deduct credits upfront
         const creditsRemaining = await deductCredits(userId, creditsRequired);
 
-        // Create/update contacts and collect their IDs
+        // Create/update contacts and collect their IDs + variables mapping
         const contactIds: string[] = [];
+        const contactVariablesMap: Record<string, Record<string, string>> = {};
         const contactErrors: Array<{ phone: string; error: string }> = [];
 
         for (const contactData of contacts) {
@@ -2133,6 +2134,14 @@ export async function createExternalCampaign(req: Request, res: Response): Promi
 
                 if (savedContact) {
                     contactIds.push(savedContact.contact_id);
+                    // Store per-contact variables (convert keys to strings)
+                    if (contactData.variables && typeof contactData.variables === 'object') {
+                        const vars: Record<string, string> = {};
+                        for (const [key, value] of Object.entries(contactData.variables)) {
+                            vars[String(key)] = String(value);
+                        }
+                        contactVariablesMap[savedContact.contact_id] = vars;
+                    }
                 }
             } catch (err) {
                 contactErrors.push({
@@ -2180,10 +2189,10 @@ export async function createExternalCampaign(req: Request, res: Response): Promi
             scheduled_at: scheduledAt,
         });
 
-        // If immediate, start the campaign
+        // If immediate, start the campaign with per-contact variables
         let finalCampaign: Campaign = campaign;
         if (scheduleType === 'IMMEDIATE') {
-            finalCampaign = await campaignService.startCampaignWithContactIds(campaignId, contactIds);
+            finalCampaign = await campaignService.startCampaignWithContactIds(campaignId, contactIds, contactVariablesMap);
         }
 
         logger.info('External campaign created', {
