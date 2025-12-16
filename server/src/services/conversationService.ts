@@ -6,10 +6,24 @@ import { createOpenAIConversation } from './openaiService';
 import { ConversationModel } from '../models/Conversation';
 
 /**
+ * Check if the identifier is a webchat session ID (not a real phone number)
+ * Webchat sessions use format: session_timestamp_randomstring
+ */
+function isWebchatSessionId(identifier: string): boolean {
+    return identifier.startsWith('session_') || identifier.includes('_');
+}
+
+/**
  * Normalize phone number to E.164 format with + prefix
+ * Only normalizes actual phone numbers, not webchat session IDs
  * Ensures consistent phone number format across all operations
  */
 function normalizePhoneNumber(phone: string): string {
+    // Don't normalize webchat session IDs - they contain letters/underscores
+    if (isWebchatSessionId(phone)) {
+        return phone;
+    }
+    
     // Remove all non-digit characters except leading +
     let normalized = phone.replace(/[^\d+]/g, '');
     

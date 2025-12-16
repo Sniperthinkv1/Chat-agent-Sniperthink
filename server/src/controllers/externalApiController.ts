@@ -1991,6 +1991,132 @@ export async function sendSingleMessage(req: Request, res: Response): Promise<vo
 }
 
 // =====================================
+// GET /api/v1/campaigns
+// List campaigns for a user
+// =====================================
+export async function listCampaigns(req: Request, res: Response): Promise<void> {
+    const correlationId = getCorrelationId(req);
+    const user_id = req.query.user_id as string;
+    const phone_number_id = req.query.phone_number_id as string;
+    const status = req.query.status as string;
+    const limit = Math.min(parseInt(req.query.limit as string, 10) || 50, 100);
+    const offset = parseInt(req.query.offset as string, 10) || 0;
+
+    if (!user_id) {
+        res.status(400).json({
+            success: false,
+            error: 'Bad Request',
+            message: 'user_id query parameter is required',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+        return;
+    }
+
+    try {
+        // Build filter conditions
+        let whereClause = 'WHERE c.user_id = $1';
+        const params: any[] = [user_id];
+        let paramIndex = 2;
+
+        if (phone_number_id) {
+            whereClause += ` AND c.phone_number_id = $${paramIndex}`;
+            params.push(phone_number_id);
+            paramIndex++;
+        }
+
+        if (status) {
+            whereClause += ` AND c.status = $${paramIndex}`;
+            params.push(status.toUpperCase());
+            paramIndex++;
+        }
+
+        // Get total count
+        const countResult = await db.query<{ count: string }>(
+            `SELECT COUNT(*) as count FROM campaigns c ${whereClause}`,
+            params
+        );
+        const total = parseInt(countResult.rows[0].count, 10);
+
+        // Get campaigns with template info
+        const campaignsResult = await db.query<Campaign & { template_name?: string }>(
+            `SELECT 
+                c.campaign_id,
+                c.user_id,
+                c.template_id,
+                c.phone_number_id,
+                c.name,
+                c.description,
+                c.status,
+                c.recipient_filter,
+                c.total_recipients,
+                c.sent_count,
+                c.delivered_count,
+                c.read_count,
+                c.failed_count,
+                c.started_at,
+                c.completed_at,
+                c.paused_at,
+                c.last_error,
+                c.created_at,
+                c.updated_at,
+                t.name as template_name
+             FROM campaigns c
+             LEFT JOIN templates t ON c.template_id = t.template_id
+             ${whereClause}
+             ORDER BY c.created_at DESC
+             LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`,
+            [...params, limit, offset]
+        );
+
+        const campaigns = campaignsResult.rows.map(c => ({
+            campaign_id: c.campaign_id,
+            name: c.name,
+            description: c.description,
+            status: c.status,
+            template_id: c.template_id,
+            template_name: c.template_name || null,
+            phone_number_id: c.phone_number_id,
+            total_recipients: c.total_recipients,
+            sent_count: c.sent_count,
+            delivered_count: c.delivered_count,
+            read_count: c.read_count,
+            failed_count: c.failed_count,
+            progress_percent: c.total_recipients > 0 
+                ? Math.round((c.sent_count / c.total_recipients) * 100) 
+                : 0,
+            started_at: c.started_at,
+            completed_at: c.completed_at,
+            created_at: c.created_at,
+        }));
+
+        logger.info('Campaigns listed via external API', { correlationId, userId: user_id, count: campaigns.length });
+
+        res.status(200).json({
+            success: true,
+            data: campaigns,
+            pagination: {
+                total,
+                limit,
+                offset,
+                has_more: offset + campaigns.length < total,
+            },
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+    } catch (error) {
+        logger.error('Failed to list campaigns', { correlationId, userId: user_id, error });
+        res.status(500).json({
+            success: false,
+            error: 'Internal Server Error',
+            message: 'Failed to list campaigns',
+            timestamp: new Date().toISOString(),
+            correlationId,
+        });
+    }
+}
+
+// =====================================
 // POST /api/v1/campaign
 // Create campaign for multiple contacts
 // =====================================
@@ -2921,8 +3047,9 @@ export const externalApiController = {
     listButtonClicks,
     getLeadButtonActivity,
     
-    // Messaging
+    // Messaging & Campaigns
     sendSingleMessage,
+    listCampaigns,
     createExternalCampaign,
     getCampaignStatus,
     

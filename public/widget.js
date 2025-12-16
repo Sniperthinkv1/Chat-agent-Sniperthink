@@ -427,9 +427,12 @@
       this.shadowRoot.addEventListener('click', (e) => {
         const target = e.target;
 
-        // Toggle widget
-        if (target.id === 'chat-button') {
+        // Toggle widget - use closest() to handle clicks on SVG children
+        if (target.id === 'chat-button' || target.closest('#chat-button')) {
+          e.preventDefault();
+          e.stopPropagation();
           this.toggleWidget();
+          return;
         }
 
         // Start chat
@@ -444,8 +447,8 @@
           }
         }
 
-        // Send message
-        if (target.id === 'send-btn') {
+        // Send message - use closest() for button children
+        if (target.id === 'send-btn' || target.closest('#send-btn')) {
           const input = this.shadowRoot.querySelector('#message-input');
           if (input && input.value) {
             this.sendMessage(input.value);
@@ -544,6 +547,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
+          }
+
+          #chat-button svg {
+            pointer-events: none;
           }
 
           #chat-button:hover {
@@ -837,6 +844,7 @@
           #send-btn svg {
             width: 20px;
             height: 20px;
+            pointer-events: none;
           }
 
           @media (max-width: 480px) {

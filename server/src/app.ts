@@ -381,8 +381,9 @@ export class App {
     this.app.get('/api/v1/button-clicks', externalApiController.listButtonClicks);
     this.app.get('/api/v1/leads/:customerPhone/button-activity', externalApiController.getLeadButtonActivity);
     
-    // Messaging
+    // Messaging & Campaigns
     this.app.post('/api/v1/send', externalApiController.sendSingleMessage);
+    this.app.get('/api/v1/campaigns', externalApiController.listCampaigns);
     this.app.post('/api/v1/campaign', externalApiController.createExternalCampaign);
     this.app.get('/api/v1/campaign/:campaignId', externalApiController.getCampaignStatus);
     
