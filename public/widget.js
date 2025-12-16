@@ -67,7 +67,7 @@
      * - If expired or missing, create new session
      */
     loadSession() {
-      const SESSION_LIFETIME = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+      const SESSION_LIFETIME = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
       const storageKey = `webchat_session_${this.agentId}`;
       const storedData = localStorage.getItem(storageKey);
       

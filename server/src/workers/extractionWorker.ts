@@ -148,9 +148,11 @@ class ExtractionWorker {
         a.agent_id
       FROM conversations c
       INNER JOIN agents a ON c.agent_id = a.agent_id
+      INNER JOIN phone_numbers pn ON a.phone_number_id = pn.id
       WHERE c.is_active = true
         AND c.openai_conversation_id IS NOT NULL
         AND c.last_message_at <= $1
+        AND pn.platform != 'webchat'
         AND (
           c.last_extraction_at IS NULL 
           OR c.last_message_at > c.last_extraction_at
