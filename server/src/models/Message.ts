@@ -17,8 +17,8 @@ export class MessageModel {
     }
 
     const query = `
-      INSERT INTO messages (message_id, conversation_id, sender, text, timestamp, status, sequence_no)
-      VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, $5, $6)
+      INSERT INTO messages (message_id, conversation_id, sender, text, timestamp, status, sequence_no, platform_message_id)
+      VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, $5, $6, $7)
       RETURNING *
     `;
     
@@ -28,7 +28,8 @@ export class MessageModel {
       messageData.sender,
       messageData.text,
       messageData.status || 'sent',
-      messageData.sequence_no
+      messageData.sequence_no,
+      messageData.platform_message_id || null
     ];
     
     try {

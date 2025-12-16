@@ -435,15 +435,18 @@ export async function processMessageOptimized(workerId: string): Promise<void> {
     // Step 10: Store everything ASYNC (non-blocking, user already got response!)
     const outgoingMessageId = `out-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 
-    // Store message first, then track delivery (sequential to avoid foreign key error)
-    // Increased delay to 500ms to ensure message is committed to DB
-    storeOutgoingMessageAsync(outgoingMessageId, session.conversationId, aiResponse, outgoingSeq)
-      .then(() => {
-        // Wait 500ms to ensure message is fully committed to DB before tracking delivery
-        setTimeout(() => {
-          trackDeliveryAsync(outgoingMessageId, sendResult.messageId!, 'sent');
-        }, 500);
-      });
+    // Store message with platform_message_id so webhook status updates can find it
+    // This fixes the FK constraint error when WhatsApp sends delivery status updates
+    storeOutgoingMessageAsync(
+      outgoingMessageId, 
+      session.conversationId, 
+      aiResponse, 
+      outgoingSeq,
+      sendResult.messageId  // Pass WhatsApp message ID so status webhooks can find this message
+    ).then(() => {
+      // Track delivery status after message is stored
+      trackDeliveryAsync(outgoingMessageId, sendResult.messageId!, 'sent');
+    });
 
     // These can run in parallel
     updateConversationActivityAsync(session.conversationId);

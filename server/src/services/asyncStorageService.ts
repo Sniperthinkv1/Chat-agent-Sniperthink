@@ -64,7 +64,8 @@ export async function storeOutgoingMessageAsync(
   messageId: string,
   conversationId: string,
   text: string,
-  sequenceNo: number
+  sequenceNo: number,
+  platformMessageId?: string
 ): Promise<void> {
   setImmediate(async () => {
     try {
@@ -75,7 +76,8 @@ export async function storeOutgoingMessageAsync(
         sender: 'agent',
         text,
         status: 'sent',
-        sequence_no: sequenceNo
+        sequence_no: sequenceNo,
+        platform_message_id: platformMessageId
       });
 
       // Message stored
@@ -90,7 +92,7 @@ export async function storeOutgoingMessageAsync(
       // Queue for retry
       await queueStorageJob({
         type: 'message',
-        data: { messageId, conversationId, text, sequenceNo, sender: 'agent' },
+        data: { messageId, conversationId, text, sequenceNo, sender: 'agent', platformMessageId },
         timestamp: Date.now(),
         retryCount: 0
       });

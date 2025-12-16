@@ -108,6 +108,7 @@ export interface CreateMessageData {
   text: string;
   status?: MessageStatus;
   sequence_no: number;
+  platform_message_id?: string;
 }
 
 export interface Credits {
