@@ -702,11 +702,12 @@ async function sendInstagramMessage(
             messageLength: messageText.length
         });
 
+        // Instagram API requires stringified JSON for message and recipient
         const requestBody = {
-            recipient: { id: customerUserId },
-            message: { 
+            recipient: JSON.stringify({ id: customerUserId }),
+            message: JSON.stringify({ 
                 text: messageText.substring(0, 1000) // Instagram limit
-            }
+            })
         };
 
         const controller = new AbortController();
@@ -714,8 +715,8 @@ async function sendInstagramMessage(
         const fetchStart = Date.now();
         
         try {
-            // Try Instagram Graph API first (works with Instagram Login tokens)
-            const instagramApiUrl = 'https://graph.facebook.com/v24.0/me/messages';
+            // Use Instagram Graph API (graph.instagram.com, not graph.facebook.com)
+            const instagramApiUrl = 'https://graph.instagram.com/v21.0/me/messages';
             
             logger.debug('Attempting Instagram Graph API (me/messages)', {
                 correlationId,
@@ -744,8 +745,13 @@ async function sendInstagramMessage(
                     statusCode: response.status
                 });
 
+                // Fallback: Facebook Graph API uses object format (not stringified)
                 const fbApiUrl = `${platformsConfig.instagramBaseUrl}/${businessAccountId}/messages`;
-                const fbRequestBody = { messaging_type: 'RESPONSE', ...requestBody };
+                const fbRequestBody = { 
+                    messaging_type: 'RESPONSE',
+                    recipient: { id: customerUserId },
+                    message: { text: messageText.substring(0, 1000) }
+                };
 
                 const fbResponse = await fetch(fbApiUrl, {
                     method: 'POST',
